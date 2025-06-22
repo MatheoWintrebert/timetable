@@ -1,0 +1,20 @@
+<turbo-frame id="professeur_tray">
+  <div class="container mt-4">
+    <h2>Créer un Professeur</h2>
+    {% for message in app.flashes('success') %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+      <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+    {{ form_start(form, { action: path('professeur_show', { nomOnglet: 'new' }) }) }}
+    <div class="mb-3">{{ form_label(form.nom) }}
+      {{ form_widget(form.nom, { attr: { class: 'form-control' } }) }}</div>
+    <div class="mb-3">{{ form_label(form.prenom) }}
+      {{ form_widget(form.prenom, { attr: { class: 'form-control' } }) }}</div>
+    <div class="mb-3">{{ form_label(form.nbHeuresMax) }}
+      {{ form_widget(form.nbHeuresMax, { attr: { class: 'form-control' } }) }}</div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+    {{ form_end(form) }}
+  </div>
+</turbo-frame>

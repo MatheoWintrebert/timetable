@@ -1,0 +1,41 @@
+<turbo-frame id="classe_tray">
+  <div class="container mt-4">
+    <turbo-frame id="flash"></turbo-frame>
+    <h2>Liste des Classes</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Niveau</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for classe in classes %}
+          <tr>
+            <td>{{ classe.id }}</td>
+            <td>{{ classe.nom }}</td>
+            <td>{{ classe.niveau.nom }}</td>
+            <td>
+              <form method="post" action="{{ path('classe_delete', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray" onsubmit="return confirm('Confirmer la suppression ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_classe_' ~ classe.id) }}" />
+                <button class="btn btn-danger btn-sm">Supprimer</button>
+              </form>
+              <form method="post" action="{{ path('classe_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
+                <button class="btn btn-success btn-sm">Créer un EDT</button>
+              </form>
+              <form method="post" action="{{ path('show_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
+                <button class="btn btn-info btn-sm">Voir l'EDT</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4">Aucune classe trouvée.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</turbo-frame>

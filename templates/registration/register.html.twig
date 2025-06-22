@@ -1,0 +1,363 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block body %}
+<section class="container">
+  <div class="registration-wrapper rounded shadow-lg">
+    <!-- En-tête du formulaire -->
+    <header class="form-header">
+      <div class="form-icon">👤</div>
+      <h1 class="form-title">Créer votre compte</h1>
+      <p class="form-subtitle">Rejoignez notre plateforme de gestion d'emploi du temps</p>
+    </header>
+
+    <!-- Erreurs générales du formulaire -->
+    {% if form_errors(registrationForm) %}
+      <div class="alert alert-error">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          {{ form_errors(registrationForm) }}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- Formulaire d'inscription -->
+    {{ form_start(registrationForm, {'attr': {'class': 'registration-form', 'novalidate': 'novalidate'}}) }}
+
+    <div class="form-group">
+      <div class="input-wrapper">
+        <div class="input-icon">📧</div>
+        {{ form_label(registrationForm.email, 'Adresse email', {'attr': {'class': 'form-label'}}) }}
+        {{ form_widget(registrationForm.email, {
+          'attr': {
+            'class': 'form-input',
+            'placeholder': 'votre.email@exemple.com'
+          }
+        }) }}
+        {% if form_errors(registrationForm.email) %}
+          <div class="field-error">
+            <span class="error-icon">❌</span>
+            {{ form_errors(registrationForm.email) }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="input-wrapper">
+        <div class="input-icon">🔒</div>
+        {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'attr': {'class': 'form-label'}}) }}
+        {{ form_widget(registrationForm.plainPassword, {
+          'attr': {
+            'class': 'form-input',
+            'placeholder': 'Choisissez un mot de passe sécurisé'
+          }
+        }) }}
+        {% if form_errors(registrationForm.plainPassword) %}
+          <div class="field-error">
+            <span class="error-icon">❌</span>
+            {{ form_errors(registrationForm.plainPassword) }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Actions du formulaire -->
+    <div class="form-actions">
+      <button type="submit" class="custom-btn custom-btn-primary">
+        <span class="btn-icon">✅</span>
+        Créer mon compte
+      </button>
+    </div>
+
+    {{ form_end(registrationForm) }}
+
+    <!-- Lien vers la connexion -->
+    <div class="form-footer">
+      <p class="footer-text">
+        Vous avez déjà un compte ? 
+        <a href="{{ path('app_login') }}" class="footer-link">Se connecter</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Variables de couleurs */
+  :root {
+    --primary-dark: #01172F;
+    --accent-blue: #08A4BD;
+    --title-green: #00635D;
+    --secondary-purple: #3B1F2B;
+    --form-dark: #181A1B;
+    --success-green: #28a745;
+    --warning-orange: #ffc107;
+    --danger-red: #dc3545;
+    --input-bg: #2a2d2f;
+    --input-border: #3a3d3f;
+    --text-light: #ffffff;
+    --text-muted: #b8bcc0;
+  }
+
+  /* Conteneur principal */
+  .registration-wrapper {
+    background-color: var(--form-dark);
+    border: 2px solid var(--title-green);
+    padding: 3rem;
+    margin: 2rem auto;
+    max-width: 500px;
+    position: relative;
+  }
+
+  /* En-tête du formulaire */
+  .form-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--title-green);
+  }
+
+  .form-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+  }
+
+  .form-title {
+    color: var(--accent-blue);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .form-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  /* Formulaire */
+  .registration-form {
+    width: 100%;
+  }
+
+  /* Alertes */
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    font-weight: 500;
+  }
+
+  .alert-error {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 2px solid var(--danger-red);
+    color: var(--danger-red);
+  }
+
+  .alert-icon {
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+  }
+
+  .alert-content {
+    flex: 1;
+  }
+
+  /* Groupes de formulaire */
+  .form-group {
+    margin-bottom: 2rem;
+  }
+
+  .input-wrapper {
+    position: relative;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 3.2rem;
+    font-size: 1.1rem;
+    color: var(--accent-blue);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Labels */
+  .form-label {
+    display: block;
+    color: var(--text-light);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+  }
+
+  /* Inputs */
+  .form-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    background-color: var(--input-bg);
+    border: 2px solid var(--input-border);
+    border-radius: 8px;
+    color: var(--text-light);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    background-color: #323539;
+    box-shadow: 0 0 0 3px rgba(8, 164, 189, 0.1);
+  }
+
+  .form-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+  }
+
+  /* Erreurs de champs */
+  .field-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    color: var(--danger-red);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .error-icon {
+    font-size: 1rem;
+  }
+
+  /* Actions du formulaire */
+  .form-actions {
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+
+  /* Bouton personnalisé */
+  .custom-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 2.5rem;
+    border: 2px solid;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background: none;
+    min-width: 200px;
+  }
+
+  .custom-btn-primary {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+  }
+
+  .custom-btn-primary:hover {
+    background-color: var(--title-green);
+    border-color: var(--title-green);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 99, 93, 0.3);
+  }
+
+  .custom-btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-icon {
+    font-size: 1.1rem;
+  }
+
+  /* Pied de formulaire */
+  .form-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--input-border);
+  }
+
+  .footer-text {
+    color: var(--text-muted);
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .footer-link {
+    color: var(--accent-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+
+  .footer-link:hover {
+    color: var(--title-green);
+    text-decoration: underline;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .registration-wrapper {
+      padding: 2rem 1.5rem;
+      margin: 1rem;
+    }
+
+    .form-title {
+      font-size: 1.8rem;
+    }
+
+    .form-subtitle {
+      font-size: 0.9rem;
+    }
+
+    .form-input {
+      padding: 0.875rem 0.875rem 0.875rem 2.75rem;
+    }
+
+    .input-icon {
+      left: 0.875rem;
+      top: 3.1rem;
+    }
+
+    .custom-btn {
+      width: 100%;
+      padding: 1rem 1.5rem;
+    }
+  }
+
+  /* Amélioration de l'ombre */
+  .shadow-lg {
+    box-shadow: 0 15px 35px rgba(1, 23, 47, 0.3) !important;
+  }
+
+  /* Animation d'entrée */
+  .registration-wrapper {
+    animation: slideInUp 0.6s ease-out;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+{% endblock %}

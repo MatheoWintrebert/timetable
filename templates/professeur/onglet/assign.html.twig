@@ -1,0 +1,44 @@
+<turbo-frame id="professeur_tray">
+  <div class="container mt-4">
+    <h2>Assigner un Professeur à un Utilisateur</h2>
+
+    {% for message in app.flashes('success') %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+      <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <form method="post" action="{{ path('professeur_show', { nomOnglet: 'assign' }) }}">
+      <div class="row mb-3">
+        <div class="col">
+          <label for="user">Utilisateur</label>
+          <select class="form-control" name="user" id="user" required>
+            {% for user in users %}
+              <option value="{{ user.id }}">{{ user.email }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col">
+          <label for="professeur">Professeur</label>
+          <select class="form-control" name="professeur" id="professeur" required>
+            {% for prof in professeurs %}
+              <option value="{{ prof.id }}">{{ prof.nom }} {{ prof.prenom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Assigner</button>
+    </form>
+
+    <hr />
+    <h3>Utilisateurs déjà assignés :</h3>
+    <ul>
+      {% for user in users %}
+        {% if user.professeur %}
+          <li>{{ user.email }} → {{ user.professeur.nom }} {{ user.professeur.prenom }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</turbo-frame>

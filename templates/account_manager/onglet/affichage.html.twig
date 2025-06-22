@@ -1,0 +1,222 @@
+<turbo-frame id="account_tray">
+  <section class="container">
+    <div class="profile-content-wrapper rounded shadow-lg">
+      <!-- En-tête du profil -->
+      <header class="profile-header">
+        <h1 class="profile-title">Bienvenue sur votre compte !</h1>
+        <p class="profile-username">{{ app.user.userIdentifier }}</p>
+      </header>
+
+      <!-- Section des rôles -->
+      <div class="profile-section">
+        <h2 class="section-title"><div class="role-icon">👤</div>Rôles de l'utilisateur</h2>
+        <div class="roles-container">
+          {% for role in display_roles %}
+            <span class="role-badge">{{ role }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Section des actions -->
+      <div class="profile-section">
+        <h2 class="section-title"><div class="action-icon">⚙️</div>Gestion du compte</h2>
+        <div class="actions-grid">
+          <a href="{{ path('app_account_manager_password_update') }}" class="custom-btn custom-btn-primary">🔒 Changer de mot de passe</a>
+
+          {% if is_granted('ROLE_PROF') %}
+            <a href="{{ path('app_save_availabilities') }}" class="custom-btn custom-btn-secondary">📅 Renseigner vos disponibilités</a>
+
+            <form method="post" action="{{ path('show_true_edt', { id: professeurId }) }}" data-turbo-frame="account_tray" class="inline-form">
+              <button class="custom-btn custom-btn-primary">📊 Voir l'emploi du temps</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    /* Variables de couleurs */
+    :root {
+      --primary-dark: #01172f;
+      --accent-blue: #08a4bd;
+      --title-green: #00635d;
+      --secondary-purple: #3b1f2b;
+      --table-dark: #181a1b;
+    }
+    
+    /* Conteneur principal du profil */
+    .profile-content-wrapper {
+      background-color: var(--table-dark);
+      border: 2px solid var(--title-green);
+      padding: 2rem;
+      margin: 1rem 0;
+    }
+    
+    /* En-tête du profil */
+    .profile-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--title-green);
+    }
+    
+    .profile-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .profile-username {
+      color: #ffffff;
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin: 0;
+      opacity: 0.9;
+    }
+    
+    /* Sections du profil */
+    .profile-section {
+      margin-bottom: 2rem;
+    }
+    
+    .section-title {
+      color: var(--title-green);
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .role-icon,
+    .action-icon {
+      font-size: 1.2rem;
+    }
+    
+    /* Container des rôles */
+    .roles-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    
+    .role-badge {
+      background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 8px rgba(8, 164, 189, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .role-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(8, 164, 189, 0.4);
+    }
+    
+    /* Grille des actions */
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    
+    .inline-form {
+      display: contents;
+    }
+    
+    /* Styles des boutons personnalisés */
+    .custom-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      text-align: center;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .custom-btn-primary {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+    
+    .custom-btn-primary:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 99, 93, 0.3);
+    }
+    
+    .custom-btn-secondary {
+      background-color: var(--secondary-purple);
+      border-color: var(--secondary-purple);
+      color: white;
+    }
+    
+    .custom-btn-secondary:hover {
+      background-color: #5a2d42;
+      border-color: #5a2d42;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 31, 43, 0.3);
+    }
+    
+    .custom-btn-danger {
+      background-color: #dc3545;
+      border-color: #dc3545;
+      color: white;
+    }
+    
+    .custom-btn-danger:hover {
+      background-color: #c82333;
+      border-color: #bd2130;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    
+    .custom-btn:active {
+      transform: translateY(0);
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .profile-content-wrapper {
+        padding: 1.5rem;
+        margin: 0.5rem 0;
+      }
+    
+      .profile-title {
+        font-size: 1.6rem;
+      }
+    
+      .actions-grid {
+        grid-template-columns: 1fr;
+      }
+    
+      .roles-container {
+        justify-content: center;
+      }
+    }
+    
+    /* Amélioration de l'ombre */
+    .shadow-lg {
+      box-shadow: 0 10px 25px rgba(1, 23, 47, 0.25) !important;
+    }
+  </style>
+</turbo-frame>

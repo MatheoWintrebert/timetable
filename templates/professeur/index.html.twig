@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Professeurs
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+  <div class="container-fluid">
+    <div class="bg-light mt-5 w-100 d-flex">
+      <div id="navProfesseur" class="d-flex flex-grow-1 flex-row rounded p-3">
+        <nav class="w-100 d-flex">
+          <a href="{{ path('professeur_show', { nomOnglet: 'new' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="professeur_tray">Créer un professeur</a>
+          <a href="{{ path('professeur_show', { nomOnglet: 'list' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="professeur_tray">Liste des professeurs</a>
+          <a href="{{ path('professeur_show', { nomOnglet: 'assign' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="professeur_tray">Assigner</a>
+        </nav>
+      </div>
+    </div>
+    <div class="flex-grow-1 m-2">
+      <div class="w-100 p-3 rounded shadow-sm bg-light">
+        <turbo-frame id="professeur_tray" src="{{ path('professeur_show', { nomOnglet: app.session.get('professeur_active') ? app.session.get('professeur_active') : 'new' }) }}">
+          <p class="text-lg text-center text-muted">Chargement...</p>
+        </turbo-frame>
+      </div>
+    </div>
+  </div>
+{% endblock %}

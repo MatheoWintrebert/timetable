@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Matières
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+  <div class="container-fluid">
+      <div class="bg-light mt-5 w-100 d-flex">
+        <div id="navmatiere" class="d-flex flex-grow-1 flex-row rounded p-3">
+          <nav class="w-100 d-flex">
+            <a href="{{ path('matiere_show', { nomOnglet: 'new' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="matiere_tray">Créer une matière</a>
+            <a href="{{ path('matiere_show', { nomOnglet: 'list' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="matiere_tray">Liste des matières</a>
+          </nav>
+        </div>
+      </div>
+      <div class="flex-grow-1 m-2">
+        <div class="w-100 p-3 rounded shadow-sm bg-light">
+          <turbo-frame id="matiere_tray" src="{{ path('matiere_show', { nomOnglet: app.session.get('matiere_active') ? app.session.get('matiere_active') : 'new' }) }}">
+            <p class="text-lg text-center text-muted">Chargement...</p>
+          </turbo-frame>
+        </div>
+      </div>
+  </div>
+{% endblock %}

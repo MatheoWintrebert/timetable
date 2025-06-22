@@ -1,0 +1,20 @@
+<turbo-frame id="programme_tray">
+  <div class="container mt-4">
+    <h2>Créer un Programme</h2>
+    {% for message in app.flashes('success') %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+      <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+    {{ form_start(form, { action: path('programme_show', { nomOnglet: 'new' }) }) }}
+    <div class="mb-3">{{ form_label(form.niveau) }}
+      {{ form_widget(form.niveau, { attr: { class: 'form-control' } }) }}</div>
+    <div class="mb-3">{{ form_label(form.matiere) }}
+      {{ form_widget(form.matiere, { attr: { class: 'form-control' } }) }}</div>
+    <div class="mb-3">{{ form_label(form.nbHeures) }}
+      {{ form_widget(form.nbHeures, { attr: { class: 'form-control' } }) }}</div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+    {{ form_end(form) }}
+  </div>
+</turbo-frame>

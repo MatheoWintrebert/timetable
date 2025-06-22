@@ -1,0 +1,33 @@
+<turbo-frame id="programme_tray">
+  <div class="container mt-4">
+    <h2>Liste des Programmes</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Niveau</th>
+          <th>Matière</th>
+          <th>Heures / semaine</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for programme in programmes %}
+          <tr>
+            <td>{{ programme.niveau.nom }}</td>
+            <td>{{ programme.matiere.nom }}</td>
+            <td>{{ programme.nbHeures }}</td>
+            <td>
+              <form method="post" action="{{ path('programme_delete', { id: programme.id }) }}" style="display:inline" data-turbo-frame="programme_tray" onsubmit="return confirm('Confirmer la suppression ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_programme_' ~ programme.id) }}" />
+                <button class="btn btn-danger btn-sm">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="3">Aucun programme trouvé.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</turbo-frame>

@@ -1,0 +1,36 @@
+<turbo-frame id="professeur_tray">
+  <div class="container mt-4">
+    <h2>Liste des Professeurs</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Nombre d'heures max</th>
+          <th>Matières</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for professeur in professeurs %}
+          <tr>
+            <td>{{ professeur.nom }}</td>
+            <td>{{ professeur.prenom }}</td>
+            <td>{{ professeur.nbHeuresMax }}</td>
+            <td>
+              {% for matiere in professeur.matieres %}
+                {{ matiere.nom }}
+                {% if not loop.last %}
+                  ,
+                {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4">Aucun professeur trouvé.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</turbo-frame>

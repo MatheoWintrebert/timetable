@@ -1,0 +1,177 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Admin Panel - EDT
+{% endblock %}
+
+{% block body %}
+  <div class="container my-2">
+    <header class="mb-4 text-center">
+      <h2 class="fw-bold" style="color: #08A4BD;">Gestion des utilisateurs</h2>
+      <p class="lead fw-bold" style="color: #00635D;">Attribuez ou retirez des rôles aux utilisateurs de votre établissement.</p>
+    </header>
+
+    <div class="table-responsive rounded shadow-lg" style="background-color: #181A1B; border: 2px solid #00635D;">
+      <table class="table align-middle mb-0 custom-table">
+        <thead style="background-color: #01172F; color: white;">
+          <tr>
+            <th scope="col" class="py-3 px-4">Email</th>
+            <th scope="col" class="py-3 px-4">Rôles</th>
+            <th scope="col" class="text-center py-3 px-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody style="background-color: #181A1B;">
+          {% for user in users %}
+            <tr class="table-row-hover">
+              <td class="py-3 px-4" style="color: #ffffff; font-weight: 500;">{{ user.email }}</td>
+              <td class="py-3 px-4" style="color: #08A4BD;">{{ user.roles|join(', ') }}</td>
+              <td class="text-center py-3 px-4">
+                {% if 'ROLE_ADMIN' not in user.roles %}
+                  <form method="post" action="{{ path('admin_add_role', { id: user.id, role: 'ROLE_ADMIN' }) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm me-2 custom-btn-primary">Attribuer Admin</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{{ path('admin_remove_role', { id: user.id, role: 'ROLE_ADMIN' }) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm me-2 custom-btn-secondary">Retirer Admin</button>
+                  </form>
+                {% endif %}
+
+                {% if 'ROLE_PROF' not in user.roles %}
+                  <form method="post" action="{{ path('admin_add_role', { id: user.id, role: 'ROLE_PROF' }) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm custom-btn-primary">Attribuer Prof</button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{{ path('admin_remove_role', { id: user.id, role: 'ROLE_PROF' }) }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm custom-btn-secondary">Retirer Prof</button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="3" class="text-center py-4" style="color: #08A4BD; font-style: italic;">Aucun utilisateur trouvé.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <style>
+    /* Couleurs personnalisées basées sur votre palette */
+    :root {
+      --primary-dark: #01172f;
+      --accent-blue: #08a4bd;
+      --title-green: #00635d;
+      --secondary-purple: #3b1f2b;
+    }
+    
+    /* Styles pour le tableau */
+    .custom-table {
+      border: none;
+      overflow: hidden;
+      background-color: #181a1b !important;
+    }
+    
+    .custom-table thead th {
+      background-color: rgb(12, 13, 14) !important;
+      color: white !important;
+    }
+    
+    .custom-table tbody tr {
+      background-color: #181a1b !important;
+    }
+    
+    .custom-table tbody td {
+      background-color: #181a1b !important;
+    }
+    
+    .table-row-hover {
+      transition: all 0.3s ease;
+      border-bottom: 1px solid #333638;
+    }
+    
+    .table-row-hover:hover {
+      background-color: #2a2d2f !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(8, 164, 189, 0.25);
+    }
+    
+    /* Styles pour les boutons */
+    .custom-btn-primary {
+      background-color: var(--accent-blue);
+      border: 2px solid var(--accent-blue);
+      color: white;
+      font-weight: 600;
+      padding: 8px 16px;
+      transition: all 0.3s ease;
+      border-radius: 6px;
+    }
+    
+    .custom-btn-primary:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 99, 93, 0.3);
+    }
+    
+    .custom-btn-secondary {
+      background-color: var(--secondary-purple);
+      border: 2px solid var(--secondary-purple);
+      color: white;
+      font-weight: 600;
+      padding: 8px 16px;
+      transition: all 0.3s ease;
+      border-radius: 6px;
+    }
+    
+    .custom-btn-secondary:hover {
+      background-color: #5a2d42;
+      border-color: #5a2d42;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(59, 31, 43, 0.3);
+    }
+    
+    /* Animation pour les boutons */
+    .custom-btn-primary:active,
+    .custom-btn-secondary:active {
+      transform: translateY(0);
+    }
+    
+    /* Style pour l'en-tête du tableau */
+    thead th {
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      border: none;
+    }
+    
+    /* Style pour les cellules du tableau */
+    tbody td {
+      border: none;
+      vertical-align: middle;
+    }
+    
+    /* Responsive improvements */
+    @media (max-width: 768px) {
+      .custom-btn-primary,
+      .custom-btn-secondary {
+        padding: 6px 12px;
+        font-size: 0.875rem;
+        margin-bottom: 5px;
+      }
+    
+      .table-responsive {
+        border-radius: 8px;
+      }
+    }
+    
+    /* Amélioration de l'ombre du conteneur */
+    .shadow-lg {
+      box-shadow: 0 10px 25px rgba(1, 23, 47, 0.15) !important;
+    }
+  </style>
+{% endblock %}

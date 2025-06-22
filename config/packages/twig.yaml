@@ -1,0 +1,9 @@
+twig:
+    file_name_pattern: '*.twig'
+    globals:
+        turbo_enabled: true
+
+
+when@test:
+    twig:
+        strict_variables: true

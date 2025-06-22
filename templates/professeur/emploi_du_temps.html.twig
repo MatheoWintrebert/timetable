@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Emploi du Temps{% endblock %}
+
+{% block body %}
+    {% include ('_partials/header.html.twig') %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Emploi du Temps</h1>
+
+        {# Bouton pour générer l'Emploi du Temps #}
+        <form action="{{ path('app_edt_generate', {id: professeur.id}) }}" method="post">
+            <button type="submit" data-turbo="false" name="generate" value="true" class="btn btn-primary mb-3">Générer l'Emploi du Temps</button>
+        </form>
+
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Heure</th>
+                <th>Lundi</th>
+                <th>Mardi</th>
+                <th>Mercredi</th>
+                <th>Jeudi</th>
+                <th>Vendredi</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for hour in 8..17 %}
+                <tr>
+                    <td>{{ hour }}:00 - {{ hour + 1 }}:00</td>
+                    {% for day in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+                        <td>
+                            {% if emploiDuTemps[day] is not null and emploiDuTemps[day][hour] is not null %}
+                                {{ emploiDuTemps[day][hour].nom }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

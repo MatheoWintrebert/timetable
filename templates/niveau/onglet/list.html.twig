@@ -1,0 +1,32 @@
+<turbo-frame id="niveau_tray">
+  <div class="container mt-4">
+    <h2>Liste des Niveaux</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for niveau in niveaux %}
+          <tr>
+            <td>{{ niveau.id }}</td>
+            <td>{{ niveau.nom }}</td>
+            <td>
+              <form method="post" action="{{ path('niveau_delete', { id: niveau.id }) }}" style="display:inline" data-turbo-frame="niveau_tray" onsubmit="return confirm('Confirmer la suppression ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_niveau_' ~ niveau.id) }}" />
+                <button class="btn btn-danger btn-sm">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="3">Aucun niveau trouvé.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</turbo-frame>

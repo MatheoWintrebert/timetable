@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+  Programmes
+{% endblock %}
+
+{% block body %}
+  {{ parent() }}
+  <div class="container-fluid">
+    <div class="bg-light mt-5 w-100 d-flex">
+      <div id="navProgramme" class="d-flex flex-grow-1 flex-row rounded p-3">
+        <nav class="w-100 d-flex">
+          <a href="{{ path('programme_show', { nomOnglet: 'new' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="programme_tray">Créer un programme</a>
+          <a href="{{ path('programme_show', { nomOnglet: 'list' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="programme_tray">Liste des programmes</a>
+        </nav>
+      </div>
+    </div>
+    <div class="flex-grow-1 m-2">
+      <div class="w-100 p-3 rounded shadow-sm bg-light">
+        <turbo-frame id="programme_tray" src="{{ path('programme_show', { nomOnglet: app.session.get('programme_active') ? app.session.get('programme_active') : 'new' }) }}">
+          <p class="text-lg text-center text-muted">Chargement...</p>
+        </turbo-frame>
+      </div>
+    </div>
+  </div>
+{% endblock %}

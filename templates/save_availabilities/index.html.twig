@@ -1,0 +1,537 @@
+<turbo-frame id="account_tray">
+  <section class="container">
+    <div class="availability-wrapper rounded shadow-lg">
+      <!-- En-tête du formulaire -->
+      <header class="form-header">
+        <div class="form-icon">📅</div>
+        <h1 class="form-title">Définissez vos disponibilités</h1>
+        <p class="form-subtitle">Configurez votre emploi du temps selon vos préférences</p>
+      </header>
+
+      {% set niveaux = { NON: 'danger', MEH: 'warning', OUI: 'primary' } %}
+      {% set joursOrdonnes = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+      
+      {# Collecter tous les créneaux horaires uniques #}
+      {% set allTimeSlots = [] %}
+      {% for jour in joursOrdonnes %}
+        {% if edt.timetable[jour] is defined %}
+          {% for creneau in edt.timetable[jour] %}
+            {% set horaireLabel = creneau.start ~ '-' ~ creneau.end %}
+            {% if horaireLabel not in allTimeSlots %}
+              {% set allTimeSlots = allTimeSlots|merge([horaireLabel]) %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+
+      <form method="POST" action="{{ path('app_save_availabilities') }}" class="availability-form">
+        <div class="legend-section">
+          <h3 class="legend-title">Légende :</h3>
+          <div class="legend-items">
+            <div class="legend-item legend-no">
+              <span class="legend-icon">🔴</span>
+              <span>NON - Indisponible</span>
+            </div>
+            <div class="legend-item legend-maybe">
+              <span class="legend-icon">🟡</span>
+              <span>MEH - Disponible si nécessaire</span>
+            </div>
+            <div class="legend-item legend-yes">
+              <span class="legend-icon">🔵</span>
+              <span>OUI - Disponible</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="schedule-table-wrapper">
+          <table class="custom-table">
+            <thead>
+              <tr class="table-header">
+                <th class="time-column">Horaires</th>
+                {% for jour in joursOrdonnes %}
+                  {% if edt.timetable[jour] is defined %}
+                    <th class="day-column">
+                      <div class="day-header-content">
+                        <span class="day-icon">📋</span>
+                        {{ jour }}
+                      </div>
+                    </th>
+                  {% endif %}
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for timeSlot in allTimeSlots %}
+                {% set isLunchBreak = false %}
+                {% set lunchBreakDay = '' %}
+                
+                {# Vérifier si c'est une pause déjeuner #}
+                {% for jour in joursOrdonnes %}
+                  {% if edt.timetable[jour] is defined %}
+                    {% for creneau in edt.timetable[jour] %}
+                      {% if (creneau.start ~ '-' ~ creneau.end) == timeSlot and creneau.course == 'lunchBreak' %}
+                        {% set isLunchBreak = true %}
+                        {% set lunchBreakDay = jour %}
+                      {% endif %}
+                    {% endfor %}
+                  {% endif %}
+                {% endfor %}
+
+                {% if isLunchBreak %}
+                  <tr class="lunch-break-row">
+                    <td class="time-cell lunch-time">
+                      <div class="lunch-break-content">
+                        <span class="lunch-icon">🍽️</span>
+                        <strong>{{ timeSlot }}</strong>
+                      </div>
+                    </td>
+                    {% for jour in joursOrdonnes %}
+                      {% if edt.timetable[jour] is defined %}
+                        <td class="lunch-break-cell">
+                          <div class="lunch-break-text">Pause déjeuner</div>
+                        </td>
+                      {% endif %}
+                    {% endfor %}
+                  </tr>
+                {% else %}
+                  <tr class="schedule-row">
+                    <td class="time-cell">
+                      <strong>{{ timeSlot }}</strong>
+                    </td>
+                    {% for jour in joursOrdonnes %}
+                      {% if edt.timetable[jour] is defined %}
+                        {% set hasSlot = false %}
+                        {% set value = 'OUI' %}
+                        
+                        {# Vérifier si ce créneau existe pour ce jour #}
+                        {% for creneau in edt.timetable[jour] %}
+                          {% if (creneau.start ~ '-' ~ creneau.end) == timeSlot and creneau.course != 'lunchBreak' %}
+                            {% set hasSlot = true %}
+                            
+                            {# Trouver la valeur dans professeur.preferenceHoraire[jour] #}
+                            {% if professeur.preferenceHoraire[jour] is defined %}
+                              {% for pref in professeur.preferenceHoraire[jour] %}
+                                {% if pref.start == creneau.start and pref.end == creneau.end %}
+                                  {% set value = pref.course %}
+                                {% endif %}
+                              {% endfor %}
+                            {% endif %}
+                          {% endif %}
+                        {% endfor %}
+
+                        <td class="schedule-cell">
+                          {% if hasSlot %}
+                            <div class="radio-group">
+                              {% for niveau, color in niveaux %}
+                                {% set radioId = (jour ~ '_' ~ timeSlot ~ '_' ~ niveau)|lower|replace({' ':'', '-':''}) %}
+                                <div class="custom-radio-wrapper">
+                                  <input type="radio"
+                                         class="custom-radio-input"
+                                         name="dispos[{{ jour }}][{{ timeSlot }}]"
+                                         id="{{ radioId }}"
+                                         value="{{ niveau }}"
+                                         {% if niveau == value %}checked{% endif %}>
+                                  <label class="custom-radio-label custom-radio-{{ niveau|lower }}"
+                                         for="{{ radioId }}"
+                                         title="{{ niveau }}">
+                                    {% if niveau == 'NON' %}🔴{% elseif niveau == 'MEH' %}🟡{% else %}🔵{% endif %}
+                                  </label>
+                                </div>
+                              {% endfor %}
+                            </div>
+                          {% else %}
+                            <div class="no-slot">—</div>
+                          {% endif %}
+                        </td>
+                      {% endif %}
+                    {% endfor %}
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="form-actions">
+          <button type="submit" class="custom-btn custom-btn-success">
+            <span class="btn-icon">✅</span>
+            Valider mes disponibilités
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <style>
+    /* Variables de couleurs */
+    :root {
+      --primary-dark: #01172F;
+      --accent-blue: #08A4BD;
+      --title-green: #00635D;
+      --secondary-purple: #3B1F2B;
+      --table-dark: #181A1B;
+      --success-green: #28a745;
+      --warning-orange: #ffc107;
+      --danger-red: #dc3545;
+    }
+
+    /* Conteneur principal */
+    .availability-wrapper {
+      background-color: var(--table-dark);
+      border: 2px solid var(--title-green);
+      padding: 2.5rem;
+      margin: 1rem 0;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* En-tête du formulaire */
+    .form-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--title-green);
+    }
+
+    .form-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-subtitle {
+      color: #ffffff;
+      font-size: 1rem;
+      opacity: 0.8;
+      margin: 0;
+    }
+
+    /* Formulaire */
+    .availability-form {
+      width: 100%;
+    }
+
+    /* Légende */
+    .legend-section {
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background-color: rgba(8, 164, 189, 0.05);
+      border: 2px solid var(--accent-blue);
+      border-radius: 8px;
+    }
+
+    .legend-title {
+      color: var(--accent-blue);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .legend-items {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ffffff;
+      font-weight: 500;
+    }
+
+    .legend-icon {
+      font-size: 1.1rem;
+    }
+
+    .legend-no {
+      color: var(--danger-red);
+    }
+
+    .legend-maybe {
+      color: var(--warning-orange);
+    }
+
+    .legend-yes {
+      color: var(--accent-blue);
+    }
+
+    /* Table personnalisée */
+    .schedule-table-wrapper {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 2px solid #3a3d3f;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #2a2d2f;
+    }
+
+    .table-header {
+      background-color: var(--primary-dark);
+    }
+
+    .custom-table th,
+    .custom-table td {
+      padding: 1rem;
+      border: 1px solid #3a3d3f;
+      text-align: center;
+    }
+
+    .custom-table th {
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .time-column {
+      background-color: var(--title-green);
+      color: #ffffff;
+      min-width: 120px;
+      font-weight: 600;
+    }
+
+    .day-column {
+      background-color: var(--accent-blue);
+      color: #ffffff;
+      min-width: 150px;
+      font-weight: 600;
+    }
+
+    .day-header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .day-icon {
+      font-size: 1rem;
+    }
+
+    /* Lignes du tableau */
+    .schedule-row {
+      transition: background-color 0.3s ease;
+    }
+
+    .schedule-row:hover {
+      background-color: rgba(8, 164, 189, 0.05);
+    }
+
+    .time-cell {
+      background-color: var(--title-green);
+      color: #ffffff;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .lunch-time {
+      background-color: var(--warning-orange);
+    }
+
+    .schedule-cell {
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    .no-slot {
+      color: #666;
+      font-style: italic;
+      font-size: 1.2rem;
+    }
+
+    /* Pause déjeuner */
+    .lunch-break-row {
+      background-color: rgba(255, 193, 7, 0.1);
+    }
+
+    .lunch-break-cell {
+      background-color: rgba(255, 193, 7, 0.05);
+      color: var(--warning-orange);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .lunch-break-text {
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    .lunch-break-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .lunch-icon {
+      font-size: 1.2rem;
+    }
+
+    /* Groupe de radio buttons */
+    .radio-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Radio buttons personnalisés */
+    .custom-radio-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+
+    .custom-radio-input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .custom-radio-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: 2px solid #3a3d3f;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background-color: #2a2d2f;
+      font-size: 1rem;
+      position: relative;
+    }
+
+    /* États des radio buttons */
+    .custom-radio-non {
+      color: var(--danger-red);
+    }
+
+    .custom-radio-meh {
+      color: var(--warning-orange);
+    }
+
+    .custom-radio-oui {
+      color: var(--accent-blue);
+    }
+
+    .custom-radio-input:checked + .custom-radio-label {
+      border-color: currentColor;
+      background-color: currentColor;
+      color:rgb(94, 89, 89);
+      transform: scale(1.1);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .custom-radio-label:hover {
+      border-color: currentColor;
+      transform: scale(1.05);
+    }
+
+    /* Actions du formulaire */
+    .form-actions {
+      margin-top: 3rem;
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 2px solid var(--title-green);
+    }
+
+    /* Bouton personnalisé */
+    .custom-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 2.5rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-size: 1.1rem;
+      background: none;
+    }
+
+    .custom-btn-success {
+      background-color: var(--success-green);
+      border-color: var(--success-green);
+      color: white;
+    }
+
+    .custom-btn-success:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 99, 93, 0.3);
+    }
+
+    .custom-btn-success:active {
+      transform: translateY(0);
+    }
+
+    .btn-icon {
+      font-size: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .availability-wrapper {
+        padding: 1.5rem;
+        margin: 0.5rem;
+      }
+
+      .form-title {
+        font-size: 1.6rem;
+      }
+
+      .day-title {
+        font-size: 1.3rem;
+      }
+
+      .custom-table th,
+      .custom-table td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      .custom-radio-label {
+        padding: 0.5rem;
+        min-width: 60px;
+      }
+
+      .radio-text {
+        font-size: 0.75rem;
+      }
+
+      .custom-btn {
+        width: 100%;
+        padding: 1rem 1.5rem;
+      }
+
+      .schedule-table-wrapper {
+        overflow-x: auto;
+      }
+    }
+
+    /* Amélioration de l'ombre */
+    .shadow-lg {
+      box-shadow: 0 10px 25px rgba(1, 23, 47, 0.25) !important;
+    }
+  </style>
+</turbo-frame>

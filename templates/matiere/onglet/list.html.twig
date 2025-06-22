@@ -1,0 +1,31 @@
+<turbo-frame id="matiere_tray">
+  <div class="container mt-4">
+    <h2>Liste des Matières</h2>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nom</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for matiere in matieres %}
+          <tr>
+            <td>{{ matiere.id }}</td>
+            <td>{{ matiere.nom }}</td>
+            <td>
+              <form method="post" action="{{ path('matiere_delete', { id: matiere.id }) }}" style="display:inline" data-turbo-frame="matiere_tray" onsubmit="return confirm('Confirmer la suppression ?');">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete_matiere_' ~ matiere.id) }}" />
+                <button class="btn btn-danger btn-sm">Supprimer</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="2">Aucune matière trouvée.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</turbo-frame>

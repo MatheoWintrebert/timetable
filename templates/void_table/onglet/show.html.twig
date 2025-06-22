@@ -1,0 +1,490 @@
+<turbo-frame id="emploi_tray">
+  <div class="schedule-display-container">
+    {% if voidEdt %}
+      <!-- En-tête -->
+      <header class="display-header">
+        <div class="header-icon">📋</div>
+        <h2 class="header-title">Votre emploi du temps</h2>
+        <p class="header-subtitle">Visualisation complète de votre planning hebdomadaire</p>
+      </header>
+
+      <!-- Statistiques rapides (sans le nombre de cours) -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ voidEdt|length }}</div>
+            <div class="stat-label">Jours</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🕐</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set totalSlots = 0 %}
+              {% for day, slots in voidEdt %}
+                {% set totalSlots = totalSlots + slots|length %}
+              {% endfor %}
+              {{ totalSlots }}
+            </div>
+            <div class="stat-label">Créneaux</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emploi du temps en ligne horizontale -->
+      <div class="schedule-horizontal">
+        {% for day, slots in voidEdt %}
+          <div class="day-column">
+            <div class="day-header">
+              <h3 class="day-title">
+                <span class="day-icon">
+                  {% if day == 'Lundi' %}🌟
+                  {% elseif day == 'Mardi' %}⚡
+                  {% elseif day == 'Mercredi' %}🔥
+                  {% elseif day == 'Jeudi' %}💫
+                  {% elseif day == 'Vendredi' %}🎯
+                  {% elseif day == 'Samedi' %}🏆
+                  {% else %}✨
+                  {% endif %}
+                </span>
+                {{ day }}
+              </h3>
+              <div class="day-summary">{{ slots|length }} créneaux</div>
+            </div>
+
+            <div class="time-slots-vertical">
+              {% for slot in slots %}
+                <div class="time-slot-compact {% if slot.course == 'lunchBreak' %}lunch-break{% elseif not slot.course or slot.course == 'Cours' %}course-slot{% else %}break-slot{% endif %}">
+                  <div class="slot-time-compact">
+                    {{ slot.start }} - {{ slot.end }}
+                  </div>
+                  <div class="slot-content-compact">
+                    {% if slot.course == 'lunchBreak' %}
+                      <span class="slot-icon">🍽️</span>
+                      <span class="slot-label-compact">Pause</span>
+                    {% elseif not slot.course or slot.course == 'Cours' %}
+                      <span class="slot-icon">📚</span>
+                      <span class="slot-label-compact">Cours</span>
+                    {% else %}
+                      <span class="slot-icon">☕</span>
+                      <span class="slot-label-compact">{{ slot.course }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <!-- État vide -->
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <h3 class="empty-title">Aucun emploi du temps</h3>
+        <p class="empty-message">Vous n'avez pas encore créé d'emploi du temps. Utilisez l'onglet "Créer" pour commencer.</p>
+        <div class="empty-action">
+          <a href="{{ path('emploi_show', { nomOnglet: 'create' }) }}" 
+             class="custom-btn custom-btn-primary" 
+             data-turbo-frame="emploi_tray">
+            <span class="btn-icon">✨</span>
+            Créer mon premier emploi du temps
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <style>
+    /* Variables de couleurs */
+    :root {
+      --primary-dark: #01172F;
+      --accent-blue: #08A4BD;
+      --title-green: #00635D;
+      --secondary-purple: #3B1F2B;
+      --form-dark: #181A1B;
+      --success-green: #28a745;
+      --warning-orange: #ffc107;
+      --danger-red: #dc3545;
+      --info-blue: #17a2b8;
+      --input-bg: #2a2d2f;
+      --input-border: #3a3d3f;
+      --text-light: #ffffff;
+      --text-muted: #b8bcc0;
+      --lunch-color: #e74c3c;
+      --course-color: #3498db;
+      --break-color: #f39c12;
+    }
+
+    /* Conteneur principal */
+    .schedule-display-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      color: var(--text-light);
+    }
+
+    /* En-tête */
+    .display-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--title-green);
+    }
+
+    .header-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    }
+
+    .header-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* Statistiques (2 colonnes au lieu de 3) */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background-color: rgba(42, 45, 47, 0.5);
+      border: 2px solid var(--input-border);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(8, 164, 189, 0.2);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      opacity: 0.8;
+    }
+
+    .stat-content {
+      flex: 1;
+    }
+
+    .stat-value {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+    }
+
+    /* Emploi du temps horizontal */
+    .schedule-horizontal {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+    }
+
+    /* Colonnes de jour */
+    .day-column {
+      min-width: 200px;
+      flex-shrink: 0;
+      background-color: rgba(42, 45, 47, 0.3);
+      border: 2px solid var(--input-border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .day-column:hover {
+      border-color: var(--title-green);
+      box-shadow: 0 8px 25px rgba(0, 99, 93, 0.2);
+    }
+
+    .day-header {
+      background: linear-gradient(135deg, var(--title-green), var(--accent-blue));
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .day-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .day-icon {
+      font-size: 1.2rem;
+    }
+
+    .day-summary {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    /* Créneaux verticaux compacts */
+    .time-slots-vertical {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .time-slot-compact {
+      padding: 0.75rem;
+      border-radius: 6px;
+      border-left: 3px solid;
+      transition: all 0.3s ease;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .time-slot-compact:hover {
+      transform: translateX(3px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .course-slot {
+      border-left-color: var(--course-color);
+    }
+
+    .lunch-break {
+      border-left-color: var(--lunch-color);
+    }
+
+    .break-slot {
+      border-left-color: var(--break-color);
+    }
+
+    .slot-time-compact {
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .slot-content-compact {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .slot-icon {
+      font-size: 1rem;
+    }
+
+    .slot-label-compact {
+      font-weight: 500;
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
+    /* État vide */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      max-width: 500px;
+      margin: 2rem auto;
+    }
+
+    .empty-icon {
+      font-size: 5rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.7;
+    }
+
+    .empty-title {
+      color: var(--accent-blue);
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .empty-message {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .empty-action {
+      margin-top: 2rem;
+    }
+
+    /* Bouton personnalisé */
+    .custom-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: none;
+    }
+
+    .custom-btn-primary {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .custom-btn-primary:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 99, 93, 0.3);
+    }
+
+    .custom-btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-icon {
+      font-size: 1.1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .schedule-horizontal {
+        flex-direction: column;
+        overflow-x: visible;
+      }
+
+      .day-column {
+        min-width: auto;
+        width: 100%;
+      }
+
+      .header-title {
+        font-size: 1.6rem;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+      }
+
+      .empty-icon {
+        font-size: 4rem;
+      }
+
+      .empty-title {
+        font-size: 1.5rem;
+      }
+
+      .empty-message {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .day-header {
+        padding: 0.75rem;
+      }
+
+      .time-slots-vertical {
+        padding: 0.75rem;
+      }
+
+      .time-slot-compact {
+        padding: 0.5rem;
+      }
+
+      .day-title {
+        font-size: 1rem;
+      }
+
+      .slot-time-compact {
+        font-size: 0.8rem;
+      }
+
+      .slot-label-compact {
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Animation échelonnée pour les colonnes */
+    .day-column:nth-child(1) { animation-delay: 0.1s; }
+    .day-column:nth-child(2) { animation-delay: 0.2s; }
+    .day-column:nth-child(3) { animation-delay: 0.3s; }
+    .day-column:nth-child(4) { animation-delay: 0.4s; }
+    .day-column:nth-child(5) { animation-delay: 0.5s; }
+    .day-column:nth-child(6) { animation-delay: 0.6s; }
+    .day-column:nth-child(7) { animation-delay: 0.7s; }
+
+    /* Scroll horizontal personnalisé */
+    .schedule-horizontal::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .schedule-horizontal::-webkit-scrollbar-track {
+      background: var(--input-bg);
+      border-radius: 4px;
+    }
+
+    .schedule-horizontal::-webkit-scrollbar-thumb {
+      background: var(--accent-blue);
+      border-radius: 4px;
+    }
+
+    .schedule-horizontal::-webkit-scrollbar-thumb:hover {
+      background: var(--title-green);
+    }
+  </style>
+</turbo-frame>

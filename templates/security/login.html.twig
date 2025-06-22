@@ -1,0 +1,384 @@
+{% extends 'base.html.twig' %}
+{% block title %}Connexion{% endblock %}
+{% block body %}
+  <section class="container">
+    <div class="login-form-wrapper rounded shadow-lg">
+      <!-- En-tête du formulaire -->
+      <header class="form-header">
+        <div class="form-icon">🔐</div>
+        <h1 class="form-title">Connexion</h1>
+        <p class="form-subtitle">Accédez à votre espace personnel</p>
+      </header>
+
+      <!-- Messages flash et erreurs -->
+      {% if error %}
+        <div class="custom-alert custom-alert-danger">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-content">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        </div>
+      {% endif %}
+
+      {% if app.user %}
+        <div class="custom-alert custom-alert-info">
+          <div class="alert-icon">ℹ️</div>
+          <div class="alert-content">
+            Vous êtes connecté en tant que {{ app.user.userIdentifier }}, 
+            <a href="{{ path('app_logout') }}" class="alert-link">Se déconnecter</a>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Formulaire -->
+      <form method="post" class="login-form">
+        <div class="form-group">
+          <div class="input-wrapper">
+            <label for="inputEmail" class="custom-label">Email</label>
+            <div class="input-container">
+              <span class="input-icon">📧</span>
+              <input type="email" 
+                     value="{{ last_username }}" 
+                     name="email" 
+                     id="inputEmail" 
+                     class="custom-input" 
+                     placeholder="Entrez votre adresse email"
+                     autocomplete="email" 
+                     required 
+                     autofocus>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="input-wrapper">
+            <label for="inputPassword" class="custom-label">Mot de passe</label>
+            <div class="input-container">
+              <span class="input-icon">🔒</span>
+              <input type="password" 
+                     name="password" 
+                     id="inputPassword" 
+                     class="custom-input" 
+                     placeholder="Entrez votre mot de passe"
+                     autocomplete="current-password" 
+                     required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-wrapper">
+            <label class="custom-checkbox">
+              <input type="checkbox" name="_remember_me">
+              <span class="checkmark">✓</span>
+              Rester connecté
+            </label>
+          </div>
+        </div>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <div class="form-actions">
+          <button class="custom-btn custom-btn-primary" type="submit">
+            <span class="btn-icon">🚪</span>
+            Se connecter
+          </button>
+        </div>
+
+        <div class="form-footer">
+          <p class="register-link">
+            Pas encore de compte ? 
+            <a href="{{ path('app_register') }}" class="footer-link">S'inscrire</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <style>
+    /* Variables de couleurs */
+    :root {
+      --primary-dark: #01172F;
+      --accent-blue: #08A4BD;
+      --title-green: #00635D;
+      --secondary-purple: #3B1F2B;
+      --table-dark: #181A1B;
+    }
+
+    /* Conteneur principal du formulaire */
+    .login-form-wrapper {
+      background-color: var(--table-dark);
+      border: 2px solid var(--title-green);
+      padding: 2.5rem;
+      margin: 1rem 0;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* En-tête du formulaire */
+    .form-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--title-green);
+    }
+
+    .form-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-subtitle {
+      color: #ffffff;
+      font-size: 1rem;
+      opacity: 0.8;
+      margin: 0;
+    }
+
+    /* Formulaire */
+    .login-form {
+      width: 100%;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-wrapper {
+      width: 100%;
+    }
+
+    /* Labels personnalisés */
+    .custom-label {
+      color: var(--title-green) !important;
+      font-weight: 600 !important;
+      margin-bottom: 0.5rem !important;
+      display: block !important;
+      font-size: 1rem !important;
+    }
+
+    /* Container des inputs */
+    .input-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      z-index: 2;
+      font-size: 1.1rem;
+    }
+
+    /* Inputs personnalisés */
+    .custom-input {
+      width: 100% !important;
+      padding: 12px 12px 12px 45px !important;
+      background-color: #2a2d2f !important;
+      border: 2px solid #3a3d3f !important;
+      border-radius: 8px !important;
+      color: #ffffff !important;
+      font-size: 1rem !important;
+      transition: all 0.3s ease !important;
+    }
+
+    .custom-input:focus {
+      outline: none !important;
+      border-color: var(--accent-blue) !important;
+      box-shadow: 0 0 0 3px rgba(8, 164, 189, 0.2) !important;
+      background-color: #323538 !important;
+    }
+
+    .custom-input::placeholder {
+      color: #888 !important;
+    }
+
+    /* Checkbox personnalisée */
+    .checkbox-wrapper {
+      margin: 1rem 0;
+    }
+
+    .custom-checkbox {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+
+    .custom-checkbox input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .checkmark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background-color: #2a2d2f;
+      border: 2px solid #3a3d3f;
+      border-radius: 4px;
+      margin-right: 0.75rem;
+      transition: all 0.3s ease;
+      font-size: 0.8rem;
+      color: transparent;
+    }
+
+    .custom-checkbox:hover .checkmark {
+      border-color: var(--accent-blue);
+    }
+
+    .custom-checkbox input[type="checkbox"]:checked ~ .checkmark {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    /* Alertes personnalisées */
+    .custom-alert {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+
+    .custom-alert-danger {
+      background-color: rgba(220, 53, 69, 0.1);
+      border: 2px solid #dc3545;
+      color: #ff6b6b;
+    }
+
+    .custom-alert-info {
+      background-color: rgba(8, 164, 189, 0.1);
+      border: 2px solid var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    .alert-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-link {
+      color: inherit;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    .alert-link:hover {
+      color: #ffffff;
+    }
+
+    /* Actions du formulaire */
+    .form-actions {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    /* Bouton personnalisé */
+    .custom-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      font-size: 1.1rem;
+      background: none;
+      width: 100%;
+    }
+
+    .custom-btn-primary {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .custom-btn-primary:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 99, 93, 0.3);
+    }
+
+    .custom-btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-icon {
+      font-size: 1rem;
+    }
+
+    /* Pied de formulaire */
+    .form-footer {
+      margin-top: 2rem;
+      text-align: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid #3a3d3f;
+    }
+
+    .register-link {
+      color: #ffffff;
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .footer-link {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--title-green);
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .login-form-wrapper {
+        padding: 1.5rem;
+        margin: 0.5rem;
+      }
+
+      .form-title {
+        font-size: 1.6rem;
+      }
+
+      .custom-btn {
+        padding: 1rem 1.5rem;
+      }
+    }
+
+    /* Amélioration de l'ombre */
+    .shadow-lg {
+      box-shadow: 0 10px 25px rgba(1, 23, 47, 0.25) !important;
+    }
+  </style>
+{% endblock %}
