@@ -6,38 +6,33 @@
 
 {% block body %}
   <!-- Hero Section -->
-  <section class="hero-section">
+  <section class="hero-section" data-controller="hero">
     <div class="container-fluid-custom">
       <div class="hero-content">
         <div class="hero-text">
-          <div class="hero-badge">
+          <div class="hero-badge" data-hero-target="badge">
             <span class="badge-icon">✨</span>
             <span>Solution intelligente d'emploi du temps</span>
           </div>
-          <h1 class="hero-title">
-            Créez votre <span class="text-gradient">emploi du temps</span> en 1 clic
-          </h1>
-          <p class="hero-subtitle">
-            Un outil intelligent pour générer des emplois du temps scolaires 
-            optimisés en quelques secondes. Fini les heures de planification manuelle !
-          </p>
-          <div class="hero-actions">
+          <h1 class="hero-title" data-hero-target="title">Créez votre <span class="text-gradient">emploi du temps</span> en 1 clic</h1>
+          <p class="hero-subtitle" data-hero-target="subtitle">Un outil intelligent pour générer des emplois du temps scolaires optimisés en quelques secondes. Fini les heures de planification manuelle !</p>
+          <div class="hero-actions" data-hero-target="actions">
             {% if not app.user %}
-              <a href="{{ path('app_register') }}" class="custom-btn custom-btn-primary btn-large">
+              <a href="{{ path('app_register') }}" class="custom-btn custom-btn-primary btn-large" data-turbo-action="replace" data-controller="button-hover">
                 <span class="btn-icon">🚀</span>
                 Commencer gratuitement
               </a>
-              <a href="{{ path('app_login') }}" class="custom-btn custom-btn-secondary btn-large">
+              <a href="{{ path('app_login') }}" class="custom-btn custom-btn-secondary btn-large" data-turbo-action="replace" data-controller="button-hover">
                 <span class="btn-icon">🔐</span>
                 Se connecter
               </a>
             {% else %}
-              <a href="{{ path('app_account_manager') }}" class="custom-btn custom-btn-primary btn-large">
+              <a href="{{ path('app_account_manager') }}" class="custom-btn custom-btn-primary btn-large" data-turbo-action="replace" data-controller="button-hover">
                 <span class="btn-icon">👤</span>
                 Accéder à mon compte
               </a>
               {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('app_classe') }}" class="custom-btn custom-btn-secondary btn-large">
+                <a href="{{ path('app_classe') }}" class="custom-btn custom-btn-secondary btn-large" data-turbo-action="replace" data-controller="button-hover">
                   <span class="btn-icon">🎓</span>
                   Gérer les classes
                 </a>
@@ -46,7 +41,7 @@
           </div>
         </div>
         <div class="hero-visual">
-          <div class="hero-card">
+          <div class="hero-card" data-controller="schedule-preview" data-hero-target="visual">
             <div class="card-header">
               <div class="card-title">📅 Emploi du temps</div>
               <div class="card-status status-success">
@@ -55,8 +50,8 @@
               </div>
             </div>
             <div class="card-content">
-              <div class="schedule-preview">
-                <div class="schedule-day">
+              <div class="schedule-preview" data-schedule-preview-target="container">
+                <div class="schedule-day" data-controller="animate-on-scroll">
                   <div class="day-name">Lundi</div>
                   <div class="time-slot slot-math">
                     <span class="time">08:00</span>
@@ -71,7 +66,7 @@
                     <span class="subject">Pause</span>
                   </div>
                 </div>
-                <div class="schedule-day">
+                <div class="schedule-day" data-controller="animate-on-scroll">
                   <div class="day-name">Mardi</div>
                   <div class="time-slot slot-science">
                     <span class="time">08:00</span>
@@ -95,55 +90,44 @@
   </section>
 
   <!-- Features Section -->
-  <section class="features-section">
+  <section class="features-section" data-controller="features">
     <div class="container-fluid-custom">
-      <div class="section-header">
+      <div class="section-header" data-controller="animate-on-scroll">
         <h2 class="section-title">Comment ça fonctionne ?</h2>
-        <p class="section-subtitle">
-          Une approche simple et efficace pour créer des emplois du temps optimaux
-        </p>
+        <p class="section-subtitle">Une approche simple et efficace pour créer des emplois du temps optimaux</p>
       </div>
-      
-      <div class="features-grid">
-        <div class="feature-card" data-step="1">
+
+      <div class="features-grid" data-features-target="grid">
+        <div class="feature-card" data-step="1" data-controller="feature-card animate-on-scroll">
           <div class="feature-icon">
             <span class="icon-bg">🎓</span>
           </div>
           <div class="feature-content">
             <div class="feature-step">Étape 1</div>
             <h3 class="feature-title">Configurez vos classes</h3>
-            <p class="feature-description">
-              Ajoutez facilement les niveaux, matières, programmes et classes 
-              de votre établissement en quelques clics.
-            </p>
+            <p class="feature-description">Ajoutez facilement les niveaux, matières, programmes et classes de votre établissement en quelques clics.</p>
           </div>
         </div>
 
-        <div class="feature-card" data-step="2">
+        <div class="feature-card" data-step="2" data-controller="feature-card animate-on-scroll">
           <div class="feature-icon">
             <span class="icon-bg">👨‍🏫</span>
           </div>
           <div class="feature-content">
             <div class="feature-step">Étape 2</div>
             <h3 class="feature-title">Ajoutez les professeurs</h3>
-            <p class="feature-description">
-              Créez les fiches professeurs, définissez leurs disponibilités 
-              et préférences horaires pour un planning personnalisé.
-            </p>
+            <p class="feature-description">Créez les fiches professeurs, définissez leurs disponibilités et préférences horaires pour un planning personnalisé.</p>
           </div>
         </div>
 
-        <div class="feature-card" data-step="3">
+        <div class="feature-card" data-step="3" data-controller="feature-card animate-on-scroll">
           <div class="feature-icon">
             <span class="icon-bg">⚡</span>
           </div>
           <div class="feature-content">
             <div class="feature-step">Étape 3</div>
             <h3 class="feature-title">Générez l'emploi du temps</h3>
-            <p class="feature-description">
-              Un seul clic suffit ! Notre algorithme intelligent propose 
-              un emploi du temps cohérent et optimisé automatiquement.
-            </p>
+            <p class="feature-description">Un seul clic suffit ! Notre algorithme intelligent propose un emploi du temps cohérent et optimisé automatiquement.</p>
           </div>
         </div>
       </div>
@@ -151,37 +135,32 @@
   </section>
 
   <!-- Benefits Section -->
-  <section class="benefits-section">
+  <section class="benefits-section" data-controller="benefits">
     <div class="container-fluid-custom">
       <div class="benefits-content">
-        <div class="benefits-text">
-          <h2 class="benefits-title">
-            Facilitez la rentrée dans votre établissement
-          </h2>
-          <p class="benefits-description">
-            Automatisez une tâche complexe avec une solution moderne pensée pour vous. 
-            Gagnez du temps précieux et réduisez les erreurs de planification.
-          </p>
-          
-          <div class="benefits-list">
-            <div class="benefit-item">
+        <div class="benefits-text" data-controller="animate-on-scroll">
+          <h2 class="benefits-title">Facilitez la rentrée dans votre établissement</h2>
+          <p class="benefits-description">Automatisez une tâche complexe avec une solution moderne pensée pour vous. Gagnez du temps précieux et réduisez les erreurs de planification.</p>
+
+          <div class="benefits-list" data-benefits-target="list">
+            <div class="benefit-item" data-controller="benefit-item animate-on-scroll">
               <div class="benefit-icon">⚡</div>
               <div class="benefit-text">
-                <strong>Génération instantanée</strong><br>
+                <strong>Génération instantanée</strong><br />
                 Créez un emploi du temps complet en quelques secondes
               </div>
             </div>
-            <div class="benefit-item">
+            <div class="benefit-item" data-controller="benefit-item animate-on-scroll">
               <div class="benefit-icon">🎯</div>
               <div class="benefit-text">
-                <strong>Optimisation intelligente</strong><br>
+                <strong>Optimisation intelligente</strong><br />
                 Respecte automatiquement les contraintes et préférences
               </div>
             </div>
-            <div class="benefit-item">
+            <div class="benefit-item" data-controller="benefit-item animate-on-scroll">
               <div class="benefit-icon">📱</div>
               <div class="benefit-text">
-                <strong>Interface moderne</strong><br>
+                <strong>Interface moderne</strong><br />
                 Design intuitif et responsive sur tous les appareils
               </div>
             </div>
@@ -189,25 +168,25 @@
 
           {% if not app.user %}
             <div class="benefits-cta">
-              <a href="{{ path('app_register') }}" class="custom-btn custom-btn-success btn-large">
+              <a href="{{ path('app_register') }}" class="custom-btn custom-btn-success btn-large" data-turbo-action="replace" data-controller="button-hover">
                 <span class="btn-icon">✨</span>
                 Essayer maintenant
               </a>
             </div>
           {% endif %}
         </div>
-        
-        <div class="benefits-visual">
-          <div class="stats-showcase">
-            <div class="stat-item">
-              <div class="stat-value">100%</div>
+
+        <div class="benefits-visual" data-controller="animate-on-scroll">
+          <div class="stats-showcase" data-controller="stats-counter">
+            <div class="stat-item" data-stats-counter-target="item">
+              <div class="stat-value" data-counter="100">100%</div>
               <div class="stat-label">Automatisé</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-item" data-stats-counter-target="item">
               <div class="stat-value">⚡</div>
               <div class="stat-label">Instantané</div>
             </div>
-            <div class="stat-item">
+            <div class="stat-item" data-stats-counter-target="item">
               <div class="stat-value">🎯</div>
               <div class="stat-label">Optimisé</div>
             </div>
@@ -216,460 +195,4 @@
       </div>
     </div>
   </section>
-</div>
-
-<style>
-/* ===== HERO SECTION ===== */
-.hero-section {
-  padding: var(--spacing-xxl) 0;
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-purple) 70%, var(--title-green) 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 80%, rgba(8, 164, 189, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(0, 99, 93, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-.hero-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xxl);
-  align-items: center;
-  max-width: 1400px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: rgba(8, 164, 189, 0.1);
-  border: 1px solid var(--accent-blue);
-  border-radius: 50px;
-  color: var(--accent-blue);
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: var(--spacing-lg);
-  animation: float 3s ease-in-out infinite;
-}
-
-.badge-icon {
-  font-size: 1rem;
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: var(--spacing-lg);
-  color: var(--text-light);
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-subtitle {
-  font-size: 1.25rem;
-  line-height: 1.6;
-  color: var(--text-muted);
-  margin-bottom: var(--spacing-xxl);
-  max-width: 500px;
-}
-
-.hero-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-}
-
-.btn-large {
-  padding: var(--spacing-lg) var(--spacing-xl);
-  font-size: 1.1rem;
-}
-
-/* Hero Visual */
-.hero-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.hero-card {
-  background: var(--card-bg);
-  border: 2px solid var(--input-border);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
-  width: 100%;
-  max-width: 400px;
-  animation: fadeInUp 0.8s ease-out 0.3s both;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: linear-gradient(135deg, var(--title-green), var(--accent-blue));
-  color: white;
-}
-
-.card-title {
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-.card-status {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.card-content {
-  padding: var(--spacing-lg);
-}
-
-.schedule-preview {
-  display: flex;
-  gap: var(--spacing-md);
-}
-
-.schedule-day {
-  flex: 1;
-}
-
-.day-name {
-  font-weight: 600;
-  color: var(--accent-blue);
-  margin-bottom: var(--spacing-sm);
-  text-align: center;
-  font-size: 0.9rem;
-}
-
-.time-slot {
-  display: flex;
-  flex-direction: column;
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  margin-bottom: var(--spacing-xs);
-  border-left: 3px solid;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.time-slot .time {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.time-slot .subject {
-  font-size: 0.8rem;
-  color: var(--text-light);
-  font-weight: 500;
-}
-
-.slot-math { border-left-color: #e74c3c; }
-.slot-french { border-left-color: #3498db; }
-.slot-science { border-left-color: #2ecc71; }
-.slot-history { border-left-color: #f39c12; }
-.slot-break { border-left-color: var(--text-muted); }
-
-/* ===== FEATURES SECTION ===== */
-.features-section {
-  padding: var(--spacing-xxl) 0;
-  background: var(--content-bg);
-}
-
-.section-header {
-  text-align: center;
-  margin-bottom: var(--spacing-xxl);
-}
-
-.section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--accent-blue);
-  margin-bottom: var(--spacing-md);
-}
-
-.section-subtitle {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-xl);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.feature-card {
-  background: var(--card-bg);
-  border: 2px solid var(--input-border);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-xl);
-  text-align: center;
-  transition: all var(--transition-normal);
-  position: relative;
-  overflow: hidden;
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.05), transparent);
-  transition: left var(--transition-slow);
-}
-
-.feature-card:hover {
-  border-color: var(--accent-blue);
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-}
-
-.feature-card:hover::before {
-  left: 100%;
-}
-
-.feature-icon {
-  margin-bottom: var(--spacing-lg);
-}
-
-.icon-bg {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
-  border-radius: 50%;
-  font-size: 2rem;
-  color: white;
-}
-
-.feature-step {
-  color: var(--accent-blue);
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--spacing-sm);
-}
-
-.feature-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-light);
-  margin-bottom: var(--spacing-md);
-}
-
-.feature-description {
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-
-/* ===== BENEFITS SECTION ===== */
-.benefits-section {
-  padding: var(--spacing-xxl) 0;
-  background: linear-gradient(135deg, var(--secondary-purple) 0%, var(--primary-dark) 100%);
-}
-
-.benefits-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xxl);
-  align-items: center;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.benefits-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text-light);
-  margin-bottom: var(--spacing-lg);
-  line-height: 1.2;
-}
-
-.benefits-description {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  margin-bottom: var(--spacing-xl);
-}
-
-.benefits-list {
-  margin-bottom: var(--spacing-xl);
-}
-
-.benefit-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: var(--border-radius-md);
-  border-left: 3px solid var(--accent-blue);
-}
-
-.benefit-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.benefit-text {
-  color: var(--text-light);
-  line-height: 1.5;
-}
-
-.benefits-cta {
-  margin-top: var(--spacing-xl);
-}
-
-/* Stats Showcase */
-.stats-showcase {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--spacing-md);
-  padding: var(--spacing-xl);
-  background: var(--card-bg);
-  border: 2px solid var(--input-border);
-  border-radius: var(--border-radius-xl);
-  box-shadow: var(--shadow-lg);
-}
-
-.stat-item {
-  text-align: center;
-  padding: var(--spacing-md);
-}
-
-.stat-value {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--accent-blue);
-  display: block;
-  margin-bottom: var(--spacing-sm);
-}
-
-.stat-label {
-  color: var(--text-muted);
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1200px) {
-  .hero-content,
-  .benefits-content {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-xl);
-    text-align: center;
-  }
-  
-  .hero-title {
-    font-size: 3rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
-  }
-  
-  .section-title {
-    font-size: 2rem;
-  }
-  
-  .benefits-title {
-    font-size: 2rem;
-  }
-  
-  .hero-actions {
-    justify-content: center;
-  }
-  
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .stats-showcase {
-    grid-template-columns: 1fr;
-  }
-  
-  .schedule-preview {
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .btn-large {
-    width: 100%;
-  }
-  
-  .benefit-item {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-/* ===== ANIMATIONS ===== */
-.feature-card {
-  animation: fadeInUp 0.6s ease-out;
-}
-
-.feature-card:nth-child(1) { animation-delay: 0.1s; }
-.feature-card:nth-child(2) { animation-delay: 0.2s; }
-.feature-card:nth-child(3) { animation-delay: 0.3s; }
-
-.benefit-item {
-  animation: fadeInLeft 0.6s ease-out;
-}
-
-.benefit-item:nth-child(1) { animation-delay: 0.1s; }
-.benefit-item:nth-child(2) { animation-delay: 0.2s; }
-.benefit-item:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-</style>
 {% endblock %}

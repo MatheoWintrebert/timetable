@@ -1,3 +1,7 @@
+import { startStimulusApp } from '@symfony/stimulus-bundle';
 
-// register any custom, 3rd party controllers here
-// app.register('some_controller_name', SomeImportedController);
+const app = startStimulusApp();
+app.debug = true;
+
+console.log( '✅ Stimulus started with AssetMapper' );
+export { app };

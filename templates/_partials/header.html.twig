@@ -1,126 +1,21 @@
-<style>
-  /* Styles pour améliorer le dropdown */
-  .dropdown-enhanced {
-    position: relative;
-    background: rgba(8, 164, 189, 0.1) !important;
-    border: 1px solid rgba(8, 164, 189, 0.3) !important;
-    border-radius: var(--border-radius-sm) !important;
-  }
-  
-  .dropdown-enhanced:hover {
-    background: rgba(8, 164, 189, 0.2) !important;
-    border-color: var(--accent-blue) !important;
-  }
-  
-  .dropdown-indicator {
-    font-size: 0.7rem;
-    margin-left: 0.5rem;
-    transition: transform var(--transition-normal);
-    opacity: 0.8;
-  }
-  
-  .dropdown-enhanced[aria-expanded='true'] .dropdown-indicator {
-    transform: rotate(180deg);
-  }
-  
-  .dropdown-enhanced[aria-expanded='true'] {
-    background: var(--accent-blue) !important;
-    color: white !important;
-  }
-  
-  /* Headers dans le dropdown */
-  .dropdown-header {
-    color: var(--accent-blue) !important;
-    font-weight: 600 !important;
-    font-size: 0.8rem !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    padding: var(--spacing-sm) var(--spacing-md) !important;
-    margin-bottom: var(--spacing-xs) !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: var(--spacing-sm) !important;
-    border-bottom: 1px solid var(--input-border) !important;
-  }
-  
-  /* Amélioration du dropdown menu */
-  .dropdown-menu {
-    min-width: 250px !important;
-    padding: var(--spacing-md) !important;
-    box-shadow: var(--shadow-xl) !important;
-  }
-  
-  /* Styles spécifiques pour les actions invités */
-  .guest-actions {
-    display: flex;
-    gap: var(--spacing-sm);
-  }
-  
-  /* Amélioration pour très petits écrans */
-  @media (max-width: 350px) {
-    .navbar-brand span {
-      display: none;
-    }
-  
-    .user-info {
-      font-size: 0.8rem;
-    }
-  }
-  
-  /* Animation du dropdown */
-  .dropdown-menu {
-    opacity: 0;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    pointer-events: none;
-  }
-  
-  .dropdown-menu.show {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-  }
-  
-  /* Responsive pour le dropdown */
-  @media (max-width: 991.98px) {
-    .dropdown-enhanced {
-      background: transparent !important;
-      border: none !important;
-    }
-  
-    .dropdown-indicator {
-      display: none;
-    }
-  
-    .dropdown-menu {
-      position: static !important;
-      transform: none !important;
-      box-shadow: none !important;
-      border: none !important;
-      background: rgba(42, 45, 47, 0.5) !important;
-      border-radius: var(--border-radius-md) !important;
-      margin: var(--spacing-sm) 0 !important;
-    }
-  }
-</style>
-<nav class="navbar navbar-expand-lg navbar-dark">
+<nav class="navbar navbar-expand-lg navbar-dark" data-controller="navbar">
   <div class="container-fluid-custom">
     <!-- Brand -->
-    <a class="navbar-brand" href="{{ path('app_main') }}">
-      <img src="{{ asset('assets/logo.png') }}" alt="Logo" style="max-width: 32px; height: auto;" />
+    <a class="navbar-brand" href="{{ path('app_main') }}" data-turbo-action="replace">
+      <img src="{{ asset('logo.png') }}" alt="Logo" data-controller="logo-animation" data-action="mouseenter->logo-animation#spin mouseleave->logo-animation#reset" />
       <span>EDT Manager</span>
     </a>
 
     <!-- Mobile toggle -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" data-action="click->navbar#toggle" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
 
     <!-- Navigation content -->
-    <div class="collapse navbar-collapse" id="navbarNav">
+    <div class="collapse navbar-collapse" id="navbarNav" data-navbar-target="menu">
       <ul class="navbar-nav me-auto">
         {% if app.user is defined and app.user %}
           <!-- Mon Compte -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ path('app_account_manager') }}">
+            <a class="nav-link {{ app.request.get('_route') == 'app_account_manager' ? 'active' : '' }}" href="{{ path('app_account_manager') }}" data-turbo-action="replace">
               <span>👤</span>
               Mon Compte
             </a>
@@ -129,33 +24,36 @@
           {% if is_granted('ROLE_ADMIN') %}
             <!-- Administration -->
             <li class="nav-item">
-              <a class="nav-link" href="{{ path('app_admin') }}">
+              <a class="nav-link {{ app.request.get('_route') == 'app_admin' ? 'active' : '' }}" href="{{ path('app_admin') }}" data-turbo-action="replace">
                 <span>⚙️</span>
                 Administration
               </a>
             </li>
 
-            <!-- Menu de gestion -->
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownGestion" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <!-- Menu de gestion avec Stimulus -->
+            <li class="nav-item dropdown" data-controller="dropdown">
+              <a class="nav-link dropdown-toggle dropdown-enhanced" href="#" id="navbarDropdownGestion" role="button" data-bs-toggle="dropdown" data-action="click->dropdown#toggle" aria-expanded="false">
                 <span>📊</span>
                 Gestion
               </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion">
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownGestion" data-dropdown-target="menu">
                 <li>
-                  <a class="dropdown-item" href="{{ path('app_niveau') }}">
+                  <h6 class="dropdown-header">📚 Configuration</h6>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ path('app_niveau') }}" data-turbo-action="replace">
                     <span>🎯</span>
                     Niveaux
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ path('app_classe') }}">
+                  <a class="dropdown-item" href="{{ path('app_classe') }}" data-turbo-action="replace">
                     <span>🎓</span>
                     Classes
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ path('app_matiere') }}">
+                  <a class="dropdown-item" href="{{ path('app_matiere') }}" data-turbo-action="replace">
                     <span>📚</span>
                     Matières
                   </a>
@@ -164,13 +62,16 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ path('app_professeur') }}">
+                  <h6 class="dropdown-header">👥 Personnel</h6>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ path('app_professeur') }}" data-turbo-action="replace">
                     <span>👨‍🏫</span>
                     Professeurs
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ path('app_programme') }}">
+                  <a class="dropdown-item" href="{{ path('app_programme') }}" data-turbo-action="replace">
                     <span>📋</span>
                     Programmes
                   </a>
@@ -179,7 +80,10 @@
                   <hr class="dropdown-divider" />
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ path('app_emploi') }}">
+                  <h6 class="dropdown-header">📅 Planning</h6>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ path('app_emploi') }}" data-turbo-action="replace">
                     <span>📅</span>
                     Emploi du temps vide
                   </a>
@@ -190,7 +94,7 @@
         {% else %}
           <!-- Connexion pour invités -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ path('app_login') }}">
+            <a class="nav-link" href="{{ path('app_login') }}" data-turbo-action="replace">
               <span>🔐</span>
               Connexion
             </a>
@@ -202,14 +106,14 @@
       <div class="navbar-actions">
         {% if app.user is defined and app.user %}
           <!-- Informations utilisateur visibles -->
-          <div class="user-info">
+          <div class="user-info" data-controller="user-info">
             <div class="user-label">Connecté en tant que</div>
             <div class="user-email">{{ app.user.userIdentifier }}</div>
           </div>
 
           <!-- Bouton de déconnexion -->
-          <form method="post" action="{{ path('app_logout') }}">
-            <button class="btn btn-outline-light btn-sm" data-turbo="false">
+          <form method="post" action="{{ path('app_logout') }}" data-controller="confirm" data-action="submit->confirm#ask" data-confirm-message-value="Êtes-vous sûr de vouloir vous déconnecter ?">
+            <button class="btn btn-outline-light btn-sm">
               <span>🚪</span>
               <span class="d-none d-sm-inline">Se déconnecter</span>
               <span class="d-sm-none">Exit</span>
@@ -218,7 +122,7 @@
         {% else %}
           <!-- Actions pour invités -->
           <div class="guest-actions">
-            <a href="{{ path('app_register') }}" class="btn btn-outline-light btn-sm">
+            <a href="{{ path('app_register') }}" class="btn btn-outline-light btn-sm" data-turbo-action="replace">
               <span>✨</span>
               S'inscrire
             </a>
@@ -228,29 +132,3 @@
     </div>
   </div>
 </nav>
-<style>
-  nav {
-    margin-top: var(--spacing-md);
-    padding-top: var(--spacing-md);
-    border-top: 1px solid var(--input-border);
-  }
-  
-  .navbar-nav .nav-link {
-    margin: var(--spacing-xs) 0;
-    text-align: center;
-  }
-  
-  /* User info styling */
-  .text-primary {
-    color: var(--accent-blue) !important;
-  }
-  
-  /* Animation pour le logo */
-  .navbar-brand img {
-    transition: all var(--transition-normal);
-  }
-  
-  .navbar-brand:hover img {
-    transform: rotate(5deg) scale(1.1);
-  }
-</style>
