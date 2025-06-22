@@ -1,140 +1,205 @@
+<!-- ========== TEMPLATE: classe/onglet/edt_show.html.twig REFACTORISÉ ========== -->
 <turbo-frame id="classe_tray">
-  <section class="container">
-    <div class="schedule-display-container">
-      <header class="display-header">
-        <h2 class="header-title mt-4">Emploi du temps de {{ classe.nom }}</h2>
-        <p class="header-subtitle">Visualisez votre planning hebdomadaire</p>
-      </header>
+  <div class="schedule-display-container" 
+       data-controller="schedule-preview" 
+       data-schedule-preview-container-target="container">
+    
+    <header class="display-header">
+      <div class="header-icon">📅</div>
+      <h2 class="header-title">Emploi du temps de {{ classe.nom }}</h2>
+      <p class="header-subtitle">Visualisez votre planning hebdomadaire</p>
+    </header>
 
-      {% if edtClasse is empty %}
-        <div class="empty-state">
-          <div class="empty-icon">📅</div>
-          <h3 class="empty-title">Aucun emploi du temps disponible</h3>
-          <p class="empty-message">Votre planning sera disponible dès qu'il sera configuré.</p>
+    {% if edtClasse is empty %}
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <h3 class="empty-title">Aucun emploi du temps disponible</h3>
+        <p class="empty-message">Votre planning sera disponible dès qu'il sera configuré.</p>
+        <div class="empty-action">
+          <a href="{{ path('classe_show', { nomOnglet: 'list' }) }}" 
+             class="custom-btn custom-btn-primary" 
+             data-turbo-frame="classe_tray"
+             data-controller="button-hover">
+            <span class="btn-icon">📋</span>
+            Retour à la liste
+          </a>
         </div>
-      {% else %}
-        <div class="stats-row">
-          <!-- Heures de cours -->
-          <div class="stat-card">
-            <div class="stat-icon">📚</div>
-            <div class="stat-content">
-              <div class="stat-value">
-                {% set courseCount = 0 %}
-                {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
-                  {% for slot in edtClasse[jour] %}
-                    {% if slot.course not in ['OUI', 'MEH', null, 'lunchBreak'] %}
-                      {% set courseCount = courseCount + 1 %}
-                    {% endif %}
-                  {% endfor %}
+      </div>
+    {% else %}
+      
+      <!-- Statistiques -->
+      <div class="stats-row" data-controller="stats-counter">
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">📚</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set courseCount = 0 %}
+              {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+                {% for slot in edtClasse[jour] %}
+                  {% if slot.course not in ['OUI', 'MEH', null, 'lunchBreak'] %}
+                    {% set courseCount = courseCount + 1 %}
+                  {% endif %}
                 {% endfor %}
-                {{ courseCount }}
-              </div>
-              <div class="stat-label">Heures de cours</div>
+              {% endfor %}
+              {{ courseCount }}
             </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon">🛋️</div>
-            <div class="stat-content">
-              <div class="stat-value">
-                {% set freeCount = 0 %}
-                {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
-                  {% for slot in edtClasse[jour] %}
-                    {% if slot.course in ['OUI', 'MEH', null] %}
-                      {% set freeCount = freeCount + 1 %}
-                    {% endif %}
-                  {% endfor %}
-                {% endfor %}
-                {{ freeCount }}
-              </div>
-              <div class="stat-label">Temps libre</div>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon">🎯</div>
-            <div class="stat-content">
-              <div class="stat-value">
-                {% set uniqueSubjects = [] %}
-                {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
-                  {% for slot in edtClasse[jour] %}
-                    {% if slot.course not in ['OUI', 'MEH', null, 'lunchBreak'] and slot.course not in uniqueSubjects %}
-                      {% set uniqueSubjects = uniqueSubjects|merge([slot.course]) %}
-                    {% endif %}
-                  {% endfor %}
-                {% endfor %}
-                {{ uniqueSubjects|length }}
-              </div>
-              <div class="stat-label">Matières</div>
-            </div>
+            <div class="stat-label">Heures de cours</div>
           </div>
         </div>
 
-        {# --- AFFICHAGE DU PLANNING --- #}
-        <div class="schedule-horizontal">
-          {% set joursOrdres = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">🛋️</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set freeCount = 0 %}
+              {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+                {% for slot in edtClasse[jour] %}
+                  {% if slot.course in ['OUI', 'MEH', null] %}
+                    {% set freeCount = freeCount + 1 %}
+                  {% endif %}
+                {% endfor %}
+              {% endfor %}
+              {{ freeCount }}
+            </div>
+            <div class="stat-label">Temps libre</div>
+          </div>
+        </div>
 
-          {% for jour in joursOrdres %}
-            {% set slots = edtClasse[jour] ?? [] %}
-            <div class="day-column">
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set uniqueSubjects = [] %}
+              {% for jour in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+                {% for slot in edtClasse[jour] %}
+                  {% if slot.course not in ['OUI', 'MEH', null, 'lunchBreak'] and slot.course not in uniqueSubjects %}
+                    {% set uniqueSubjects = uniqueSubjects|merge([slot.course]) %}
+                  {% endif %}
+                {% endfor %}
+              {% endfor %}
+              {{ uniqueSubjects|length }}
+            </div>
+            <div class="stat-label">Matières</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPLOI DU TEMPS EN TABLEAU TRADITIONNEL -->
+      <div class="schedule-table-wrapper">
+        {% set joursOrdres = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+        
+        {# Construire la grille horaire #}
+        {% set allTimeSlots = [] %}
+        {% for jour in joursOrdres %}
+          {% for slot in edtClasse[jour] %}
+            {% set timeKey = slot.start ~ '-' ~ slot.end %}
+            {% if timeKey not in allTimeSlots %}
+              {% set allTimeSlots = allTimeSlots|merge([timeKey]) %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+        
+        <div class="schedule-table">
+          <!-- En-tête du tableau -->
+          <div class="schedule-header">
+            <div class="time-header">
+              <div class="time-header-content">
+                <span class="time-icon">🕐</span>
+                <span class="time-text">Horaires</span>
+              </div>
+            </div>
+            {% for jour in joursOrdres %}
               <div class="day-header">
-                <h3 class="day-title">
+                <div class="day-header-content">
                   <span class="day-icon">
-                    {% if jour == 'Lundi' %}
-                      🌟
-                    {% elseif jour == 'Mardi' %}
-                      ⚡
-                    {% elseif jour == 'Mercredi' %}
-                      🔥
-                    {% elseif jour == 'Jeudi' %}
-                      💫
-                    {% elseif jour == 'Vendredi' %}
-                      🎯
-                    {% else %}
-                      ✨
+                    {% if jour == 'Lundi' %}🌟
+                    {% elseif jour == 'Mardi' %}⚡
+                    {% elseif jour == 'Mercredi' %}🔥
+                    {% elseif jour == 'Jeudi' %}💫
+                    {% elseif jour == 'Vendredi' %}🎯
                     {% endif %}
                   </span>
-                  {{ jour }}
-                </h3>
-                <div class="day-summary">{{ slots|length }} créneaux</div>
+                  <span class="day-name">{{ jour }}</span>
+                  <span class="day-count">{{ edtClasse[jour]|length }} créneaux</span>
+                </div>
               </div>
+            {% endfor %}
+          </div>
 
-              <div class="time-slots-vertical">
-                {% for slot in slots %}
-                  {% set course = slot.course %}
-                  {% set color = subjectColors[course]|default('#3498db') %}
-                  <div class="time-slot-compact {% if course == 'lunchBreak' %}
-                      lunchbreak
-                    {% elseif course in ['OUI', 'MEH', null] %}
-                      break
+          <!-- Corps du tableau -->
+          <div class="schedule-body">
+            {% for timeSlot in allTimeSlots %}
+              {% set timeSlotParts = timeSlot|split('-') %}
+              {% set startTime = timeSlotParts[0] %}
+              {% set endTime = timeSlotParts[1] %}
+              
+              <div class="schedule-row" data-time-slot="{{ timeSlot }}">
+                <!-- Colonne horaire -->
+                <div class="time-cell">
+                  <div class="time-content">
+                    <div class="time-start">{{ startTime }}</div>
+                    <div class="time-separator">—</div>
+                    <div class="time-end">{{ endTime }}</div>
+                  </div>
+                </div>
+
+                <!-- Colonnes des jours -->
+                {% for jour in joursOrdres %}
+                  {% set slotFound = false %}
+                  {% set currentSlot = null %}
+                  
+                  {% for slot in edtClasse[jour] %}
+                    {% if slot.start == startTime and slot.end == endTime %}
+                      {% set slotFound = true %}
+                      {% set currentSlot = slot %}
+                    {% endif %}
+                  {% endfor %}
+                  
+                  <div class="course-cell {% if slotFound %}has-course{% else %}empty-cell{% endif %}">
+                    {% if slotFound %}
+                      {% set course = currentSlot.course %}
+                      {% set color = subjectColors[course]|default('#3498db') %}
+                      
+                      <div class="course-content time-slot 
+                                  {% if course == 'lunchBreak' %}lunch-course
+                                  {% elseif course in ['OUI', 'MEH', null] %}free-course
+                                  {% else %}regular-course
+                                  {% endif %}"
+                           {% if course not in ['OUI', 'MEH', null, 'lunchBreak'] %}
+                             style="border-left-color: {{ color }}; background: linear-gradient(135deg, {{ color }}15, {{ color }}08);"
+                           {% endif %}>
+                        
+                        <div class="course-header">
+                          {% if course == 'lunchBreak' %}
+                            <span class="course-icon">🍽️</span>
+                            <span class="course-name">Pause Déjeuner</span>
+                          {% elseif course in ['OUI', 'MEH', null] %}
+                            <span class="course-icon">✅</span>
+                            <span class="course-name">Temps Libre</span>
+                          {% else %}
+                            <span class="course-icon">📖</span>
+                            <span class="course-name">{{ course }}</span>
+                          {% endif %}
+                        </div>
+                        
+                        <div class="course-time">
+                          {{ startTime }} - {{ endTime }}
+                        </div>
+                      </div>
                     {% else %}
-                      course
-                    {% endif %}" 
-                    {% if course not in ['OUI', 'MEH', null, 'lunchBreak'] %}
-                      style="border-left-color: {{ color }};"
-                    {% endif %}>
-                    <div class="slot-time-compact">{{ slot.start }} - {{ slot.end }}</div>
-                    <div class="slot-content-compact">
-                      {% if course == 'lunchBreak' %}
-                        <span class="slot-icon">🍽️</span>
-                        <span class="slot-label-compact">Pause déjeuner</span>
-                      {% elseif course in ['OUI', 'MEH', null] %}
-                        <span class="slot-icon">✅</span>
-                        <span class="slot-label-compact">Libre</span>
-                      {% else %}
-                        <span class="slot-icon">📖</span>
-                        <span class="slot-label-compact">{{ course }}</span>
-                      {% endif %}
-                    </div>
+                      <div class="empty-content">
+                        <span class="empty-icon">—</span>
+                      </div>
+                    {% endif %}
                   </div>
                 {% endfor %}
               </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
-      {% endif %}
-    </div>
-  </section>
+      </div>
+    {% endif %}
+  </div>
 
   <style>
     /* Variables de couleurs */
@@ -155,8 +220,9 @@
       --lunch-color: #e74c3c;
       --course-color: #3498db;
       --break-color: #f39c12;
+      --free-color: #95a5a6;
     }
-    
+
     /* Conteneur principal */
     .schedule-display-container {
       max-width: 1400px;
@@ -164,18 +230,6 @@
       color: var(--text-light);
     }
 
-    .lunchbreak {
-      border-left-color: var(--lunch-color) !important;
-    }
-
-    .break {
-      border-left-color: var(--break-color) !important;
-    }
-
-    .course {
-      border-left-color: var(--course-color);
-    }
-    
     /* En-tête */
     .display-header {
       text-align: center;
@@ -183,13 +237,13 @@
       padding-bottom: 1.5rem;
       border-bottom: 2px solid var(--title-green);
     }
-    
+
     .header-icon {
       font-size: 3rem;
       margin-bottom: 1rem;
       opacity: 0.9;
     }
-    
+
     .header-title {
       color: var(--accent-blue);
       font-size: 2rem;
@@ -197,15 +251,15 @@
       margin-bottom: 0.5rem;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
-    
+
     .header-subtitle {
       color: var(--text-muted);
       font-size: 1rem;
       margin: 0;
       line-height: 1.4;
     }
-    
-    /* Statistiques (3 colonnes pour les élèves) */
+
+    /* Statistiques */
     .stats-row {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -215,7 +269,7 @@
       margin-left: auto;
       margin-right: auto;
     }
-    
+
     .stat-card {
       display: flex;
       align-items: center;
@@ -226,137 +280,333 @@
       border-radius: 12px;
       transition: all 0.3s ease;
     }
-    
+
     .stat-card:hover {
       border-color: var(--accent-blue);
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(8, 164, 189, 0.2);
     }
-    
+
     .stat-icon {
       font-size: 2.5rem;
       opacity: 0.8;
     }
-    
+
     .stat-content {
       flex: 1;
     }
-    
+
     .stat-value {
       color: var(--accent-blue);
       font-size: 2rem;
       font-weight: 700;
       line-height: 1;
     }
-    
+
     .stat-label {
       color: var(--text-muted);
       font-size: 0.9rem;
       font-weight: 500;
       margin-top: 0.25rem;
     }
-    
-    /* Emploi du temps horizontal */
-    .schedule-horizontal {
-      display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-      padding-bottom: 1rem;
-      margin-right: auto;
-      margin-left: auto;
-      width: fit-content;
-    }
-    
-    /* Colonnes de jour */
-    .day-column {
-      min-width: 200px;
-      flex-shrink: 0;
-      background-color: rgba(42, 45, 47, 0.3);
-      border: 2px solid var(--input-border);
+
+    /* Wrapper du tableau d'emploi du temps */
+    .schedule-table-wrapper {
+      background: var(--form-dark);
+      border: 2px solid var(--title-green);
       border-radius: 12px;
       overflow: hidden;
-      transition: all 0.3s ease;
-      animation: fadeInUp 0.6s ease-out;
+      box-shadow: 0 8px 25px rgba(1, 23, 47, 0.2);
+      margin-bottom: 2rem;
     }
-    
-    .day-column:hover {
-      border-color: var(--title-green);
-      box-shadow: 0 8px 25px rgba(0, 99, 93, 0.2);
+
+    /* Tableau d'emploi du temps */
+    .schedule-table {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
     }
-    
-    .day-header {
-      background: linear-gradient(135deg, var(--title-green), var(--accent-blue));
-      padding: 1rem;
-      text-align: center;
+
+    /* En-tête du tableau */
+    .schedule-header {
+      display: grid;
+      grid-template-columns: 150px repeat(5, 1fr);
+      background: linear-gradient(135deg, var(--primary-dark), var(--secondary-purple));
+      border-bottom: 2px solid var(--title-green);
     }
-    
-    .day-title {
+
+    .time-header {
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 1.5rem 1rem;
+      background: var(--title-green);
+      font-weight: 700;
+    }
+
+    .time-header-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 0.5rem;
+    }
+
+    .time-icon {
+      font-size: 1.5rem;
+    }
+
+    .time-text {
+      font-size: 0.9rem;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      border-right: 1px solid var(--input-border);
+      background: linear-gradient(135deg, var(--primary-dark), var(--accent-blue));
+      transition: all 0.3s ease;
+    }
+
+    .day-header:last-child {
+      border-right: none;
+    }
+
+    .day-header:hover {
+      background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
+      transform: translateY(-2px);
+    }
+
+    .day-header-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      text-align: center;
+    }
+
+    .day-icon {
+      font-size: 1.5rem;
+    }
+
+    .day-name {
+      font-weight: 700;
       color: white;
       font-size: 1.1rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
     }
-    
-    .day-icon {
-      font-size: 1.2rem;
-    }
-    
-    .day-summary {
-      color: rgba(255, 255, 255, 0.8);
+
+    .day-count {
       font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.8);
       font-weight: 500;
     }
-    
-    /* Créneaux verticaux compacts */
-    .time-slots-vertical {
+
+    /* Corps du tableau */
+    .schedule-body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .schedule-row {
+      display: grid;
+      grid-template-columns: 150px repeat(5, 1fr);
+      border-bottom: 1px solid var(--input-border);
+      transition: all 0.3s ease;
+    }
+
+    .schedule-row:last-child {
+      border-bottom: none;
+    }
+
+    .schedule-row:hover {
+      background: rgba(8, 164, 189, 0.05);
+    }
+
+    /* Cellule horaire */
+    .time-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: var(--input-bg);
+      border-right: 2px solid var(--input-border);
+      font-family: 'Courier New', monospace;
+    }
+
+    .time-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .time-start, .time-end {
+      font-weight: 600;
+      color: var(--accent-blue);
+      font-size: 0.9rem;
+    }
+
+    .time-separator {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* Cellules de cours */
+    .course-cell {
+      border-right: 1px solid var(--input-border);
+      min-height: 80px;
+      position: relative;
+    }
+
+    .course-cell:last-child {
+      border-right: none;
+    }
+
+    .course-cell.has-course {
+      padding: 0;
+    }
+
+    .course-cell.empty-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .empty-content {
+      opacity: 0.3;
+    }
+
+    .empty-icon {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    /* Contenu des cours */
+    .course-content {
+      height: 100%;
+      width: 100%;
       padding: 1rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
-    }
-    
-    .time-slot-compact {
-      padding: 0.75rem;
-      border-radius: 6px;
-      border-left: 3px solid;
+      justify-content: center;
+      gap: 0.5rem;
+      border-left: 4px solid;
       transition: all 0.3s ease;
-      background-color: rgba(255, 255, 255, 0.03);
+      position: relative;
+      overflow: hidden;
     }
-    
-    .time-slot-compact:hover {
-      transform: translateX(3px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      background-color: rgba(255, 255, 255, 0.05);
+
+    .course-content::before {
+      display: none;
     }
-    
-    .slot-time-compact {
-      font-family: 'Courier New', monospace;
-      font-weight: 600;
-      color: var(--text-light);
-      font-size: 0.85rem;
-      margin-bottom: 0.25rem;
+
+    .course-content:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
-    
-    .slot-content-compact {
+
+    .course-content:hover::before {
+      /* Effet supprimé */
+    }
+
+    /* Types de cours */
+    .regular-course {
+      border-left-color: var(--course-color);
+      background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(52, 152, 219, 0.05));
+    }
+
+    .lunch-course {
+      border-left-color: var(--lunch-color);
+      background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(231, 76, 60, 0.05));
+    }
+
+    .free-course {
+      border-left-color: var(--free-color);
+      background: linear-gradient(135deg, rgba(149, 165, 166, 0.15), rgba(149, 165, 166, 0.05));
+    }
+
+    .course-header {
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    
-    .slot-icon {
-      font-size: 1rem;
+
+    .course-icon {
+      font-size: 1.2rem;
     }
-    
-    .slot-label-compact {
-      font-weight: 500;
+
+    .course-name {
+      font-weight: 600;
       color: var(--text-light);
-      font-size: 0.85rem;
+      font-size: 0.95rem;
+      flex: 1;
     }
-    
+
+    .course-time {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+
+    .schedule-row.highlight .course-content {
+      border-left-width: 5px !important;
+    }
+
+    /* Contrôles d'animation */
+    .animation-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .control-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent-blue);
+      border: 2px solid var(--accent-blue);
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .control-btn:hover {
+      background: var(--title-green);
+      border-color: var(--title-green);
+      transform: translateY(-2px);
+    }
+
+    .stop-btn {
+      background: var(--warning-orange);
+      border-color: var(--warning-orange);
+    }
+
+    .stop-btn:hover {
+      background: var(--danger-red);
+      border-color: var(--danger-red);
+    }
+
+    .debug-btn {
+      background: var(--secondary-purple);
+      border-color: var(--secondary-purple);
+    }
+
+    .debug-btn:hover {
+      background: var(--danger-red);
+      border-color: var(--danger-red);
+    }
+
     /* État vide */
     .empty-state {
       text-align: center;
@@ -364,143 +614,115 @@
       max-width: 500px;
       margin: 2rem auto;
     }
-    
+
     .empty-icon {
       font-size: 5rem;
       margin-bottom: 1.5rem;
       opacity: 0.7;
     }
-    
+
     .empty-title {
       color: var(--accent-blue);
       font-size: 1.8rem;
       font-weight: 700;
       margin-bottom: 1rem;
     }
-    
+
     .empty-message {
       color: var(--text-muted);
       font-size: 1.1rem;
       line-height: 1.6;
       margin-bottom: 2rem;
     }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .stats-row {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-    
-      .schedule-horizontal {
-        flex-direction: column;
-        overflow-x: visible;
-      }
-    
-      .day-column {
-        min-width: auto;
-        width: 100%;
-      }
-    
-      .header-title {
-        font-size: 1.6rem;
-      }
-    
-      .stat-value {
-        font-size: 1.5rem;
-      }
-    
-      .empty-icon {
-        font-size: 4rem;
-      }
-    
-      .empty-title {
-        font-size: 1.5rem;
-      }
-    
-      .empty-message {
-        font-size: 1rem;
-      }
+
+    .empty-action {
+      margin-top: 2rem;
     }
 
-    @media (max-width: 992px) {
+    .custom-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: none;
+    }
+
+    .custom-btn-primary {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .custom-btn-primary:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 99, 93, 0.3);
+    }
+
+    .btn-icon {
+      font-size: 1.1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .schedule-header,
+      .schedule-row {
+        grid-template-columns: 120px repeat(5, 1fr);
+      }
+
       .stats-row {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-    
-    @media (max-width: 480px) {
-      .day-header {
-        padding: 0.75rem;
+
+    @media (max-width: 768px) {
+      .schedule-table-wrapper {
+        overflow-x: auto;
       }
-    
-      .time-slots-vertical {
-        padding: 0.75rem;
+
+      .schedule-table {
+        min-width: 600px;
       }
-    
-      .time-slot-compact {
-        padding: 0.5rem;
+
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
       }
-    
-      .day-title {
+
+      .day-header-content {
+        gap: 0.25rem;
+      }
+
+      .day-name {
         font-size: 1rem;
       }
-    
-      .slot-time-compact {
-        font-size: 0.8rem;
+
+      .day-count {
+        font-size: 0.7rem;
       }
-    
-      .slot-label-compact {
-        font-size: 0.8rem;
+
+      .course-content {
+        padding: 0.75rem;
       }
-    }
-    
-    /* Animations */
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
+
+      .course-name {
+        font-size: 0.85rem;
       }
-      to {
-        opacity: 1;
-        transform: translateY(0);
+
+      .course-time {
+        font-size: 0.75rem;
       }
     }
-    
-    /* Animation échelonnée pour les colonnes */
-    .day-column:nth-child(1) {
-      animation-delay: 0.1s;
-    }
-    .day-column:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    .day-column:nth-child(3) {
-      animation-delay: 0.3s;
-    }
-    .day-column:nth-child(4) {
-      animation-delay: 0.4s;
-    }
-    .day-column:nth-child(5) {
-      animation-delay: 0.5s;
-    }
-    
-    /* Scroll horizontal personnalisé */
-    .schedule-horizontal::-webkit-scrollbar {
-      height: 8px;
-    }
-    
-    .schedule-horizontal::-webkit-scrollbar-track {
-      background: var(--input-bg);
-      border-radius: 4px;
-    }
-    
-    .schedule-horizontal::-webkit-scrollbar-thumb {
-      background: var(--accent-blue);
-      border-radius: 4px;
-    }
-    
-    .schedule-horizontal::-webkit-scrollbar-thumb:hover {
-      background: var(--title-green);
-    }
+
+
   </style>
 </turbo-frame>

@@ -1,17 +1,14 @@
 <turbo-frame id="classe_tray">
-  <div class="list-wrapper">
-    <turbo-frame id="flash"></turbo-frame>
-
+  <div class="list-classe-container" data-controller="table">
     <!-- En-tête de la liste -->
-    <header class="list-header">
-      <div class="list-title">
-        <div class="title-icon">📋</div>
-        <div>
-          <h2 class="title-text">Liste des Classes</h2>
-          <p class="title-subtitle">Gérez toutes les classes de votre établissement</p>
-        </div>
-      </div>
+    <header class="display-header">
+      <div class="header-icon">📋</div>
+      <h2 class="header-title">Liste des Classes</h2>
+      <p class="header-subtitle">Gérez toutes les classes de votre établissement</p>
     </header>
+
+    <!-- Flash container -->
+    <div id="flash-container"></div>
 
     {% if classes is empty %}
       <!-- État vide -->
@@ -20,7 +17,7 @@
         <h3 class="empty-title">Aucune classe créée</h3>
         <p class="empty-message">Commencez par créer votre première classe pour organiser votre établissement.</p>
         <div class="empty-action">
-          <a href="{{ path('classe_show', { nomOnglet: 'new' }) }}" class="custom-btn custom-btn-primary" data-turbo-frame="classe_tray">
+          <a href="{{ path('classe_show', { nomOnglet: 'new' }) }}" class="custom-btn custom-btn-primary" data-turbo-frame="classe_tray" data-controller="button-hover">
             <span class="btn-icon">➕</span>
             Créer ma première classe
           </a>
@@ -28,15 +25,15 @@
       </div>
     {% else %}
       <!-- Statistiques rapides -->
-      <div class="stats-row">
-        <div class="stat-card">
+      <div class="stats-row" data-controller="stats-counter">
+        <div class="stat-card" data-stats-counter-target="item">
           <div class="stat-icon">🎓</div>
           <div class="stat-content">
             <div class="stat-value">{{ classes|length }}</div>
             <div class="stat-label">Classes créées</div>
           </div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" data-stats-counter-target="item">
           <div class="stat-icon">🎯</div>
           <div class="stat-content">
             <div class="stat-value">
@@ -80,7 +77,7 @@
           </thead>
           <tbody>
             {% for classe in classes %}
-              <tr class="table-row">
+              <tr class="table-row" data-table-target="row">
                 <td>
                   <div class="cell-content">
                     <div class="cell-main">{{ classe.nom }}</div>
@@ -98,22 +95,22 @@
                 <td>
                   <div class="action-buttons">
                     <form method="post" action="{{ path('classe_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
-                      <button type="submit" class="action-btn btn-create" title="Créer un emploi du temps">
+                      <button type="submit" class="action-btn btn-create" title="Créer un emploi du temps" data-controller="button-hover">
                         <span class="btn-icon">📅</span>
                         <span class="btn-text">Créer EDT</span>
                       </button>
                     </form>
 
                     <form method="post" action="{{ path('show_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
-                      <button type="submit" class="action-btn btn-view" title="Voir l'emploi du temps">
+                      <button type="submit" class="action-btn btn-view" title="Voir l'emploi du temps" data-controller="button-hover">
                         <span class="btn-icon">👁️</span>
                         <span class="btn-text">Voir EDT</span>
                       </button>
                     </form>
 
-                    <form method="post" action="{{ path('classe_delete', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray" onsubmit="return confirmDelete('Êtes-vous sûr de vouloir supprimer la classe {{ classe.nom }} ?');">
+                    <form method="post" action="{{ path('classe_delete', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray" data-controller="confirm" data-confirm-message-value="Êtes-vous sûr de vouloir supprimer la classe {{ classe.nom }} ?" data-action="submit->confirm#ask">
                       <input type="hidden" name="_token" value="{{ csrf_token('delete_classe_' ~ classe.id) }}" />
-                      <button type="submit" class="action-btn btn-delete" title="Supprimer la classe">
+                      <button type="submit" class="action-btn btn-delete" title="Supprimer la classe" data-controller="button-hover">
                         <span class="btn-icon">🗑️</span>
                         <span class="btn-text">Supprimer</span>
                       </button>
@@ -130,45 +127,177 @@
 
   <style>
     /* Styles spécifiques pour la liste */
-    .list-wrapper {
-      padding: var(--spacing-xl);
+    .list-classe-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      color: var(--text-light);
     }
     
-    .list-header {
-      margin-bottom: var(--spacing-xl);
-      padding-bottom: var(--spacing-lg);
-      border-bottom: 2px solid var(--input-border);
+    /* En-tête de la liste */
+    .display-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--title-green);
     }
     
-    .list-title {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-md);
-    }
-    
-    .title-icon {
-      font-size: 2.5rem;
+    .header-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
       opacity: 0.9;
     }
     
-    .title-text {
+    .header-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .header-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    /* Statistiques */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background-color: rgba(42, 45, 47, 0.5);
+      border: 2px solid var(--input-border);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(8, 164, 189, 0.2);
+    }
+    
+    .stat-icon {
+      font-size: 2.5rem;
+      opacity: 0.8;
+    }
+    
+    .stat-content {
+      flex: 1;
+    }
+    
+    .stat-value {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+    
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+    }
+    
+    /* État vide */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      max-width: 500px;
+      margin: 2rem auto;
+    }
+    
+    .empty-icon {
+      font-size: 5rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.7;
+    }
+    
+    .empty-title {
       color: var(--accent-blue);
       font-size: 1.8rem;
       font-weight: 700;
-      margin-bottom: var(--spacing-xs);
+      margin-bottom: 1rem;
     }
     
-    .title-subtitle {
+    .empty-message {
       color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    
+    .empty-action {
+      margin-top: 2rem;
+    }
+    
+    /* Tableau de données */
+    .table-responsive {
+      border-radius: 12px;
+      background-color: var(--form-dark);
+      border: 2px solid var(--title-green);
+      box-shadow: 0 8px 25px rgba(1, 23, 47, 0.15);
+      overflow: hidden;
+      margin-top: 1.5rem;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--form-dark);
+      color: var(--text-light);
       margin: 0;
-      font-size: 1rem;
+    }
+    
+    .data-table thead th {
+      background-color: var(--primary-dark);
+      color: var(--text-light);
+      font-weight: 700;
+      padding: 1rem 1.5rem;
+      text-align: left;
+      border-bottom: 2px solid var(--input-border);
+    }
+    
+    .data-table tbody td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--input-border);
+      background-color: var(--form-dark);
+    }
+    
+    .data-table tbody tr {
+      transition: all 0.3s ease;
+    }
+    
+    .data-table tbody tr:hover {
+      background-color: rgba(8, 164, 189, 0.1);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .data-table tbody tr.selected {
+      background-color: rgba(8, 164, 189, 0.2);
+      border-left: 3px solid var(--accent-blue);
     }
     
     /* En-têtes de tableau améliorés */
     .th-content {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
+      gap: 0.5rem;
     }
     
     .th-icon {
@@ -180,7 +309,7 @@
     .cell-content {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xs);
+      gap: 0.25rem;
     }
     
     .cell-main {
@@ -193,23 +322,37 @@
       color: var(--text-muted);
     }
     
+    /* Badge personnalisé */
+    .badge-custom {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: rgba(8, 164, 189, 0.1);
+      border: 1px solid var(--accent-blue);
+      border-radius: 20px;
+      color: var(--accent-blue);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
     /* Boutons d'action */
     .action-buttons {
       display: flex;
-      gap: var(--spacing-sm);
+      gap: 0.5rem;
       flex-wrap: wrap;
     }
     
     .action-btn {
       display: flex;
       align-items: center;
-      gap: var(--spacing-xs);
-      padding: var(--spacing-sm) var(--spacing-md);
+      gap: 0.25rem;
+      padding: 0.5rem 0.75rem;
       border: 1px solid;
-      border-radius: var(--border-radius-sm);
+      border-radius: 6px;
       font-size: 0.85rem;
       font-weight: 500;
-      transition: all var(--transition-normal);
+      transition: all 0.3s ease;
       cursor: pointer;
       text-decoration: none;
       background: none;
@@ -252,8 +395,17 @@
       white-space: nowrap;
     }
     
+    .btn-icon {
+      font-size: 0.9rem;
+    }
+    
     /* Responsive pour les actions */
     @media (max-width: 768px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    
       .action-buttons {
         flex-direction: column;
       }
@@ -265,6 +417,15 @@
     
       .btn-text {
         display: none;
+      }
+    
+      .data-table {
+        font-size: 0.9rem;
+      }
+    
+      .data-table thead th,
+      .data-table tbody td {
+        padding: 0.75rem 1rem;
       }
     }
     
@@ -287,6 +448,17 @@
     }
     .table-row:nth-child(5) {
       animation-delay: 0.5s;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </turbo-frame>

@@ -1,5 +1,6 @@
+<!-- ========== TEMPLATE: matiere/onglet/new.html.twig AVEC STYLES ========== -->
 <turbo-frame id="matiere_tray">
-  <div class="form-wrapper">
+  <div class="create-matiere-container" data-controller="matiere-form form-validation">
     <!-- En-tête du formulaire -->
     <header class="form-header">
       <div class="form-icon">📚</div>
@@ -8,49 +9,58 @@
     </header>
 
     <!-- Messages flash -->
-    {% for message in app.flashes('success') %}
-      <div class="alert alert-success">
-        <div class="alert-icon">🎉</div>
-        <div class="alert-content">{{ message }}</div>
-      </div>
-    {% endfor %}
-
-    {% for message in app.flashes('error') %}
-      <div class="alert alert-danger">
-        <div class="alert-icon">⚠️</div>
-        <div class="alert-content">{{ message }}</div>
-      </div>
-    {% endfor %}
+    <div id="flash-container">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="alert alert-{{ label }}" data-controller="flash" data-flash-auto-hide-value="true" data-flash-delay-value="5000">
+            <div class="alert-icon">
+              {% if label == 'success' %}
+                🎉
+              {% elseif label == 'error' %}
+                ⚠️
+              {% else %}
+                ℹ️
+              {% endif %}
+            </div>
+            <div class="alert-content">{{ message }}</div>
+            <button type="button" class="alert-close" data-action="click->flash#remove">×</button>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
 
     <!-- Formulaire -->
-    {{ form_start(form, { action: path('matiere_show', { nomOnglet: 'new' }), attr: { class: 'entity-form' } }) }}
+    {{ form_start(form, { action: path('matiere_show', { nomOnglet: 'new' }), attr: { class: 'matiere-form', 'data-action': 'submit->matiere-form#submitForm submit->form-validation#validateForm' } }) }}
 
-    <div class="form-row">
-      <div class="form-group">
-        <div class="input-wrapper">
-          <div class="input-icon">🏷️</div>
-          {{ form_label(form.nom, 'Nom de la matière', { attr: { class: 'form-label' } }) }}
-          {{ form_widget(form.nom, { attr: { class: 'form-input', placeholder: 'Ex: Mathématiques, Français, Histoire...' } }) }}
-          {{ form_errors(form.nom) }}
-        </div>
-      </div>
+    <div class="form-section">
+      <h3 class="section-title">
+        <span class="section-icon">📝</span>
+        Informations de la matière
+      </h3>
 
-      <div class="form-group">
-        <div class="input-wrapper">
-          <div class="input-icon">🎨</div>
-          {{ form_label(form.couleur, "Couleur d'identification", { attr: { class: 'form-label' } }) }}
-          <div class="color-input-container">
-            {{ form_widget(form.couleur, { attr: { class: 'form-input color-input', 'data-preview': 'true' } }) }}
-            <div class="color-preview" id="colorPreview"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="input-wrapper">
+            <div class="input-icon">🏷️</div>
+            {{ form_label(form.nom, 'Nom de la matière', { attr: { class: 'form-label' } }) }}
+            {{ form_widget(form.nom, { attr: { class: 'form-input', placeholder: 'Ex: Mathématiques, Français, Histoire...', 'data-matiere-form-target': 'nomInput', 'data-form-validation-target': 'input', required: true } }) }}
+            {{ form_errors(form.nom) }}
           </div>
-          <small class="form-text">Cette couleur sera utilisée dans les emplois du temps</small>
-          {{ form_errors(form.couleur) }}
+        </div>
+
+        <div class="form-group">
+          <div class="input-wrapper">
+            <div class="input-icon">🎨</div>
+            {{ form_label(form.couleur, "Couleur d'identification", { attr: { class: 'form-label' } }) }}
+            {{ form_widget(form.couleur, { attr: { class: 'form-input', 'data-matiere-form-target': 'colorInput', 'data-action': 'input->matiere-form#updateColorPreview change->matiere-form#updateColorPreview' } }) }}
+            {{ form_errors(form.couleur) }}
+          </div>
         </div>
       </div>
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="custom-btn custom-btn-primary">
+      <button type="submit" class="custom-btn custom-btn-primary" data-controller="button-hover" data-matiere-form-target="submitButton">
         <span class="btn-icon">✅</span>
         Créer la matière
       </button>
@@ -59,98 +69,480 @@
     {{ form_end(form) }}
   </div>
 
+  <!-- Styles intégrés pour le formulaire -->
   <style>
-    /* Styles spécifiques pour le sélecteur de couleur */
-    .color-input-container {
+    .create-matiere-container {
+      max-width: 800px;
+      margin: 0 auto;
+      color: var(--text-light);
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .form-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--title-green);
+    }
+    
+    .form-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    }
+    
+    .form-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .form-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+      border: 2px solid;
       position: relative;
+    }
+    
+    .alert-success {
+      background-color: var(--input-bg);
+      border: 2px solid var(--input-border);
+      border-radius: 8px;
+      color: var(--text-light);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      background-color: #323539;
+      box-shadow: 0 0 0 3px rgba(8, 164, 189, 0.1);
+    }
+    
+    .search-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+    
+    /* État vide centré */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      max-width: 600px;
+      margin: 3rem auto;
+    }
+    
+    .empty-icon {
+      font-size: 6rem;
+      margin-bottom: 2rem;
+      opacity: 0.7;
+    }
+    
+    .empty-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    
+    .empty-message {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    
+    .empty-action {
+      margin-top: 2rem;
+    }
+    
+    .custom-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: none;
+      min-width: 200px;
+    }
+    
+    .custom-btn-primary {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+    
+    .custom-btn-primary:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 99, 93, 0.3);
+    }
+    
+    /* Tableau centré */
+    .table-responsive {
+      border-radius: 12px;
+      background-color: var(--form-dark);
+      border: 2px solid var(--title-green);
+      box-shadow: 0 8px 25px rgba(1, 23, 47, 0.15);
+      overflow: hidden;
+      margin: 1.5rem auto;
+      max-width: 1200px;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--form-dark);
+      color: var(--text-light);
+      margin: 0;
+    }
+    
+    .data-table thead th {
+      background-color: var(--primary-dark);
+      color: var(--text-light);
+      font-weight: 700;
+      padding: 1rem 1.5rem;
+      text-align: left;
+      border-bottom: 2px solid var(--input-border);
+    }
+    
+    .data-table tbody td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--input-border);
+      background-color: var(--form-dark);
+    }
+    
+    .data-table tbody tr {
+      transition: all 0.3s ease;
+    }
+    
+    .data-table tbody tr:hover {
+      background-color: rgba(8, 164, 189, 0.1);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .th-content {
       display: flex;
       align-items: center;
-      gap: var(--spacing-md);
+      gap: 0.5rem;
     }
     
-    .color-input {
-      flex: 1;
-      min-width: 0;
+    .th-icon {
+      font-size: 1rem;
+      opacity: 0.8;
     }
     
-    .color-preview {
-      width: 60px;
-      height: 45px;
-      border: 2px solid var(--input-border);
-      border-radius: var(--border-radius-md);
-      background: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
-      background-size: 8px 8px;
-      background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
-      transition: all var(--transition-normal);
-      position: relative;
-      overflow: hidden;
+    .cell-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
     }
     
-    .color-preview::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #3498db;
-      transition: background-color var(--transition-normal);
+    .cell-main {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 1rem;
     }
     
-    .form-text {
+    .cell-meta {
+      font-size: 0.8rem;
       color: var(--text-muted);
-      font-size: 0.85rem;
-      margin-top: var(--spacing-xs);
-      font-style: italic;
     }
     
-    /* Amélioration du input couleur */
-    input[type='color'] {
-      appearance: none;
-      -webkit-appearance: none;
-      border: none;
-      width: 100%;
-      height: 45px;
-      background: none;
+    /* Affichage des couleurs amélioré */
+    .color-display {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .color-swatch-mini {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
       cursor: pointer;
     }
     
-    input[type='color']::-webkit-color-swatch-wrapper {
+    .color-swatch-mini:hover {
+      transform: scale(1.1);
+      border-color: var(--accent-blue);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    }
+    
+    .color-code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: var(--text-light);
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--input-border);
+    }
+    
+    /* Aperçu de cours amélioré */
+    .course-preview {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-left: 5px solid;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      min-width: 180px;
+      background-blend-mode: multiply;
+    }
+    
+    .course-preview:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      border-left-width: 6px;
+    }
+    
+    .preview-icon {
+      font-size: 1.2rem;
+    }
+    
+    .preview-text {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+    
+    /* Boutons d'action améliorés */
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      background: none;
+      min-width: 120px;
+      justify-content: center;
+    }
+    
+    .btn-delete {
+      color: var(--danger-red);
+      border-color: var(--danger-red);
+      background: rgba(220, 53, 69, 0.1);
+    }
+    
+    .btn-delete:hover {
+      background-color: var(--danger-red);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
+    }
+    
+    .btn-delete:active {
+      transform: translateY(0);
+    }
+    
+    .btn-text {
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    
+    .btn-icon {
+      font-size: 1rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+      .stats-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+    
+      .stat-card {
+        max-width: 400px;
+        width: 100%;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .action-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+    
+      .action-btn {
+        width: 100%;
+        min-width: auto;
+      }
+    
+      .data-table {
+        font-size: 0.9rem;
+      }
+    
+      .data-table thead th,
+      .data-table tbody td {
+        padding: 0.75rem 1rem;
+      }
+    
+      .course-preview {
+        min-width: auto;
+        padding: 0.5rem 0.75rem;
+      }
+    
+      .color-swatch-mini {
+        width: 28px;
+        height: 28px;
+      }
+    
+      .list-matiere-container {
+        padding: 0 0.5rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .btn-text {
+        display: none;
+      }
+    
+      .empty-icon {
+        font-size: 4rem;
+      }
+    
+      .empty-title {
+        font-size: 1.6rem;
+      }
+    
+      .header-title {
+        font-size: 1.6rem;
+      }
+    }
+    
+    /* Animations */
+    .table-row {
+      animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .table-row:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    .table-row:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .table-row:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+    .table-row:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+    .table-row:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Alertes flash */
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+      border: 2px solid;
+      position: relative;
+    }
+    
+    .alert-success {
+      background-color: rgba(40, 167, 69, 0.1);
+      border-color: var(--success-green);
+      color: var(--success-green);
+    }
+    
+    .alert-error {
+      background-color: rgba(220, 53, 69, 0.1);
+      border-color: var(--danger-red);
+      color: var(--danger-red);
+    }
+    
+    .alert-info {
+      background-color: rgba(23, 162, 184, 0.1);
+      border-color: var(--info-blue);
+      color: var(--info-blue);
+    }
+    
+    .alert-icon {
+      font-size: 1.2rem;
+      margin-top: 0.1rem;
+    }
+    
+    .alert-content {
+      flex: 1;
+    }
+    
+    .alert-close {
+      background: none;
+      border: none;
+      color: currentColor;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.3s;
       padding: 0;
-      border: none;
-      border-radius: var(--border-radius-md);
-      overflow: hidden;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
-    input[type='color']::-webkit-color-swatch {
-      border: none;
-      border-radius: var(--border-radius-md);
-    }
-    
-    input[type='color']::-moz-color-swatch {
-      border: none;
-      border-radius: var(--border-radius-md);
+    .alert-close:hover {
+      opacity: 1;
     }
   </style>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const colorInput = document.querySelector('input[type="color"]')
-      const colorPreview = document.getElementById('colorPreview')
-    
-      if (colorInput && colorPreview) {
-        function updatePreview() {
-          colorPreview.style.setProperty('--preview-color', colorInput.value)
-          colorPreview.querySelector('::after, :after').style.backgroundColor = colorInput.value
-        }
-    
-        // Mise à jour initiale
-        updatePreview()
-    
-        // Mise à jour lors du changement
-        colorInput.addEventListener('input', updatePreview)
-        colorInput.addEventListener('change', updatePreview)
-      }
-    })
-  </script>
 </turbo-frame>

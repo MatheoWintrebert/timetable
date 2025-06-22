@@ -5,44 +5,238 @@
 {% endblock %}
 
 {% block body %}
-  <div class="management-container">
+  <section class="container-fluid px-4 py-3">
     <!-- En-tête de la page -->
-    <div class="page-header">
-      <div class="header-content">
-        <div class="header-icon">📚</div>
-        <div class="header-text">
-          <h1 class="page-title">Gestion des Matières</h1>
-          <p class="page-subtitle">Organisez et personnalisez les matières enseignées</p>
-        </div>
-      </div>
-    </div>
+    <header class="page-header">
+      <div class="header-icon">📚</div>
+      <h1 class="header-title">Gestion des Matières</h1>
+      <p class="header-subtitle">Organisez et personnalisez les matières enseignées</p>
+    </header>
 
-    <!-- Navigation des onglets -->
-    <div class="navigation-section">
-      <div class="nav-container">
-        <nav class="tab-navigation">
-          <a href="{{ path('matiere_show', { nomOnglet: 'new' }) }}" class="nav-tab" data-turbo-frame="matiere_tray">
-            <span class="tab-icon">➕</span>
-            <span class="tab-text">Créer une matière</span>
-          </a>
-          <a href="{{ path('matiere_show', { nomOnglet: 'list' }) }}" class="nav-tab" data-turbo-frame="matiere_tray">
-            <span class="tab-icon">📋</span>
-            <span class="tab-text">Liste des matières</span>
-          </a>
-        </nav>
-      </div>
+    <!-- Navigation principale -->
+    <div class="nav-wrapper">
+      <nav class="main-navigation" data-controller="tabs" data-tab-group="matiere" data-tabs-active-class="active">
+        <a href="{{ path('matiere_show', { nomOnglet: 'new' }) }}" class="nav-tab" data-tabs-target="tab" data-tab-id="new" data-action="click->tabs#selectTab" data-turbo-frame="matiere_tray">
+          <span class="nav-icon">➕</span>
+          <span class="nav-text">Créer une matière</span>
+        </a>
+        <a href="{{ path('matiere_show', { nomOnglet: 'list' }) }}" class="nav-tab" data-tabs-target="tab" data-tab-id="list" data-action="click->tabs#selectTab" data-turbo-frame="matiere_tray">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Liste des matières</span>
+        </a>
+      </nav>
     </div>
 
     <!-- Contenu principal -->
-    <div class="content-section">
+    <div class="content-wrapper">
       <div class="content-container">
-        <turbo-frame id="matiere_tray" src="{{ path('matiere_show', { nomOnglet: app.session.get('matiere_active') ? : 'new' }) }}">
-          <div class="loading-state">
+        <turbo-frame id="matiere_tray" src="{{ path('matiere_show', { nomOnglet: app.session.get('matiere_active') ? app.session.get('matiere_active') : 'new' }) }}">
+          <div class="loading-container">
             <div class="loading-spinner"></div>
             <p class="loading-text">Chargement en cours...</p>
           </div>
         </turbo-frame>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Styles (reprennent exactement ceux du système de classes) -->
+  <style>
+    /* Variables de couleurs (identiques au système de classes) */
+    :root {
+      --primary-dark: #01172f;
+      --accent-blue: #08a4bd;
+      --title-green: #00635d;
+      --secondary-purple: #3b1f2b;
+      --form-dark: #181a1b;
+      --success-green: #28a745;
+      --warning-orange: #ffc107;
+      --danger-red: #dc3545;
+      --input-bg: #2a2d2f;
+      --input-border: #3a3d3f;
+      --text-light: #ffffff;
+      --text-muted: #b8bcc0;
+      --background-light: #f8f9fa;
+    }
+    
+    /* Tous les styles de navigation et layout identiques au système de classes */
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+    
+    .header-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    }
+    
+    .header-title {
+      color: var(--accent-blue);
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    .nav-wrapper {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .main-navigation {
+      display: flex;
+      background-color: var(--form-dark);
+      border: 2px solid var(--title-green);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(1, 23, 47, 0.15);
+    }
+    
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.25rem 2rem;
+      background-color: var(--form-dark);
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      border-right: 2px solid var(--input-border);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .nav-tab:last-child {
+      border-right: none;
+    }
+    
+    .nav-tab::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.1), transparent);
+      transition: left 0.6s;
+    }
+    
+    .nav-tab:hover,
+    .nav-tab.active {
+      background-color: var(--accent-blue);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(8, 164, 189, 0.3);
+    }
+    
+    .nav-tab:hover::before {
+      left: 100%;
+    }
+    
+    .nav-icon {
+      font-size: 1.2rem;
+    }
+    
+    .nav-text {
+      white-space: nowrap;
+    }
+    
+    .content-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .content-container {
+      width: 100%;
+      max-width: 1200px;
+      background-color: var(--form-dark);
+      border: 2px solid var(--title-green);
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 15px 35px rgba(1, 23, 47, 0.2);
+      animation: slideInUp 0.6s ease-out;
+    }
+    
+    .loading-container {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--input-border);
+      border-top: 4px solid var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    
+    .loading-text {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Responsive identique au système de classes */
+    @media (max-width: 768px) {
+      .header-title {
+        font-size: 2rem;
+      }
+    
+      .main-navigation {
+        flex-direction: column;
+        width: 100%;
+        max-width: 400px;
+      }
+    
+      .nav-tab {
+        border-right: none;
+        border-bottom: 2px solid var(--input-border);
+        padding: 1rem 1.5rem;
+        justify-content: center;
+      }
+    
+      .nav-tab:last-child {
+        border-bottom: none;
+      }
+    
+      .content-container {
+        padding: 1.5rem;
+        margin: 0 1rem;
+      }
+    }
+  </style>
 {% endblock %}
