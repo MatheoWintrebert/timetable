@@ -5,9 +5,8 @@
 {% endblock %}
 
 {% block body %}
-  {{ parent() }}
-  
-  <div class="classe-management-container">
+  <div class="management-container">
+    <!-- En-tête de la page -->
     <div class="page-header">
       <div class="header-content">
         <div class="header-icon">🎓</div>
@@ -18,22 +17,15 @@
       </div>
     </div>
 
+    <!-- Navigation des onglets -->
     <div class="navigation-section">
       <div class="nav-container">
         <nav class="tab-navigation">
-          <a
-            href="{{ path('classe_show', { nomOnglet: 'new' }) }}"
-            class="nav-tab"
-            data-turbo-frame="classe_tray"
-          >
+          <a href="{{ path('classe_show', { nomOnglet: 'new' }) }}" class="nav-tab" data-turbo-frame="classe_tray">
             <span class="tab-icon">➕</span>
             <span class="tab-text">Créer une classe</span>
           </a>
-          <a
-            href="{{ path('classe_show', { nomOnglet: 'list' }) }}"
-            class="nav-tab"
-            data-turbo-frame="classe_tray"
-          >
+          <a href="{{ path('classe_show', { nomOnglet: 'list' }) }}" class="nav-tab" data-turbo-frame="classe_tray">
             <span class="tab-icon">📋</span>
             <span class="tab-text">Liste des classes</span>
           </a>
@@ -41,12 +33,10 @@
       </div>
     </div>
 
+    <!-- Contenu principal -->
     <div class="content-section">
       <div class="content-container">
-        <turbo-frame
-          id="classe_tray"
-          src="{{ path('classe_show', { nomOnglet: app.session.get('classe_active') ?: 'new' }) }}"
-        >
+        <turbo-frame id="classe_tray" src="{{ path('classe_show', { nomOnglet: app.session.get('classe_active') ? : 'new' }) }}">
           <div class="loading-state">
             <div class="loading-spinner"></div>
             <p class="loading-text">Chargement en cours...</p>
@@ -55,339 +45,4 @@
       </div>
     </div>
   </div>
-
-  <style>
-    /* Variables de couleurs cohérentes */
-    :root {
-      --primary-dark: #01172f;
-      --accent-blue: #08a4bd;
-      --title-green: #00635d;
-      --secondary-purple: #3b1f2b;
-      --form-dark: #181a1b;
-      --success-green: #28a745;
-      --warning-orange: #ffc107;
-      --danger-red: #dc3545;
-      --info-blue: #17a2b8;
-      --input-bg: #2a2d2f;
-      --input-border: #3a3d3f;
-      --text-light: #ffffff;
-      --text-muted: #b8bcc0;
-      --content-bg: rgba(42, 45, 47, 0.3);
-      --hover-bg: rgba(8, 164, 189, 0.1);
-    }
-
-    /* Conteneur principal */
-    .background {
-      min-height: 100vh;
-      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-purple) 100%);
-      color: var(--text-light);
-      padding: 2rem 0;
-    }
-
-    /* En-tête de page */
-    .page-header {
-      margin-bottom: 3rem;
-      padding: 0 1rem;
-    }
-
-    .header-content {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 2rem;
-      background: var(--content-bg);
-      border: 2px solid var(--input-border);
-      border-radius: 16px;
-      backdrop-filter: blur(10px);
-    }
-
-    .header-icon {
-      font-size: 4rem;
-      opacity: 0.9;
-      animation: float 3s ease-in-out infinite;
-    }
-
-    .header-text {
-      flex: 1;
-    }
-
-    .page-title {
-      color: var(--accent-blue);
-      font-size: 2.5rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    .page-subtitle {
-      color: var(--text-muted);
-      font-size: 1.2rem;
-      margin: 0;
-      line-height: 1.4;
-    }
-
-    /* Section de navigation */
-    .navigation-section {
-      margin-bottom: 2rem;
-      padding: 0 1rem;
-    }
-
-    .nav-container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .tab-navigation {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    .nav-tab {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      padding: 1.25rem 2rem;
-      background: var(--content-bg);
-      border: 2px solid var(--input-border);
-      border-radius: 12px;
-      color: var(--text-light);
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .nav-tab::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .nav-tab:hover {
-      border-color: var(--accent-blue);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(8, 164, 189, 0.3);
-      background: var(--hover-bg);
-    }
-
-    .nav-tab:hover::before {
-      left: 100%;
-    }
-
-    .nav-tab:active {
-      transform: translateY(0);
-    }
-
-    .tab-icon {
-      font-size: 1.25rem;
-      opacity: 0.9;
-    }
-
-    .tab-text {
-      font-weight: 600;
-    }
-
-    /* Section de contenu */
-    .content-section {
-      padding: 0 1rem;
-    }
-
-    .content-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: var(--content-bg);
-      border: 2px solid var(--input-border);
-      border-radius: 16px;
-      min-height: 500px;
-      backdrop-filter: blur(10px);
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-
-    .content-container:hover {
-      border-color: var(--title-green);
-      box-shadow: 0 8px 30px rgba(0, 99, 93, 0.2);
-    }
-
-    /* État de chargement */
-    .loading-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 400px;
-      gap: 2rem;
-    }
-
-    .loading-spinner {
-      width: 60px;
-      height: 60px;
-      border: 4px solid var(--input-border);
-      border-top: 4px solid var(--accent-blue);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    .loading-text {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-      font-weight: 500;
-      margin: 0;
-    }
-
-    /* Animations */
-    @keyframes float {
-      0%, 100% {
-        transform: translateY(0px);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* Animation d'entrée */
-    .classe-management-container {
-      animation: fadeInUp 0.6s ease-out;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .classe-management-container {
-        padding: 1rem 0;
-      }
-
-      .header-content {
-        flex-direction: column;
-        text-align: center;
-        padding: 1.5rem;
-      }
-
-      .header-icon {
-        font-size: 3rem;
-      }
-
-      .page-title {
-        font-size: 2rem;
-      }
-
-      .page-subtitle {
-        font-size: 1rem;
-      }
-
-      .tab-navigation {
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .nav-tab {
-        padding: 1rem 1.5rem;
-      }
-
-      .content-container {
-        margin: 0 0.5rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .header-content {
-        padding: 1rem;
-      }
-
-      .page-title {
-        font-size: 1.75rem;
-      }
-
-      .nav-tab {
-        padding: 0.875rem 1rem;
-        font-size: 0.9rem;
-      }
-
-      .tab-icon {
-        font-size: 1.1rem;
-      }
-    }
-
-    /* Amélioration du focus pour l'accessibilité */
-    .nav-tab:focus {
-      outline: 2px solid var(--accent-blue);
-      outline-offset: 2px;
-    }
-
-    /* Transition smooth pour le turbo-frame */
-    turbo-frame {
-      display: block;
-      transition: opacity 0.3s ease;
-    }
-
-    /* Style pour les états actifs des onglets */
-    .nav-tab.active {
-      background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
-      border-color: var(--accent-blue);
-      color: white;
-      box-shadow: 0 4px 15px rgba(8, 164, 189, 0.4);
-    }
-
-    .nav-tab.active .tab-icon {
-      opacity: 1;
-    }
-  </style>
-
-  <script>
-    // Script pour gérer l'état actif des onglets
-    document.addEventListener('DOMContentLoaded', function() {
-      const navTabs = document.querySelectorAll('.nav-tab');
-      
-      navTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          // Retirer la classe active de tous les onglets
-          navTabs.forEach(t => t.classList.remove('active'));
-          // Ajouter la classe active à l'onglet cliqué
-          this.classList.add('active');
-        });
-      });
-
-      // Marquer l'onglet actif au chargement de la page
-      const currentPath = window.location.pathname;
-      navTabs.forEach(tab => {
-        if (tab.href.includes(currentPath)) {
-          tab.classList.add('active');
-        }
-      });
-    });
-  </script>
 {% endblock %}

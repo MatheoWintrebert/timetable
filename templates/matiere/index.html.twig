@@ -1,26 +1,48 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-  Matières
+  Matières - Gestion
 {% endblock %}
 
 {% block body %}
-  {{ parent() }}
-  <div class="container-fluid">
-      <div class="bg-light mt-5 w-100 d-flex">
-        <div id="navmatiere" class="d-flex flex-grow-1 flex-row rounded p-3">
-          <nav class="w-100 d-flex">
-            <a href="{{ path('matiere_show', { nomOnglet: 'new' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="matiere_tray">Créer une matière</a>
-            <a href="{{ path('matiere_show', { nomOnglet: 'list' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="matiere_tray">Liste des matières</a>
-          </nav>
+  <div class="management-container">
+    <!-- En-tête de la page -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-icon">📚</div>
+        <div class="header-text">
+          <h1 class="page-title">Gestion des Matières</h1>
+          <p class="page-subtitle">Organisez et personnalisez les matières enseignées</p>
         </div>
       </div>
-      <div class="flex-grow-1 m-2">
-        <div class="w-100 p-3 rounded shadow-sm bg-light">
-          <turbo-frame id="matiere_tray" src="{{ path('matiere_show', { nomOnglet: app.session.get('matiere_active') ? app.session.get('matiere_active') : 'new' }) }}">
-            <p class="text-lg text-center text-muted">Chargement...</p>
-          </turbo-frame>
-        </div>
+    </div>
+
+    <!-- Navigation des onglets -->
+    <div class="navigation-section">
+      <div class="nav-container">
+        <nav class="tab-navigation">
+          <a href="{{ path('matiere_show', { nomOnglet: 'new' }) }}" class="nav-tab" data-turbo-frame="matiere_tray">
+            <span class="tab-icon">➕</span>
+            <span class="tab-text">Créer une matière</span>
+          </a>
+          <a href="{{ path('matiere_show', { nomOnglet: 'list' }) }}" class="nav-tab" data-turbo-frame="matiere_tray">
+            <span class="tab-icon">📋</span>
+            <span class="tab-text">Liste des matières</span>
+          </a>
+        </nav>
       </div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="content-section">
+      <div class="content-container">
+        <turbo-frame id="matiere_tray" src="{{ path('matiere_show', { nomOnglet: app.session.get('matiere_active') ? : 'new' }) }}">
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Chargement en cours...</p>
+          </div>
+        </turbo-frame>
+      </div>
+    </div>
   </div>
 {% endblock %}

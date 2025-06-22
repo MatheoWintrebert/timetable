@@ -1,41 +1,292 @@
 <turbo-frame id="classe_tray">
-  <div class="container mt-4">
+  <div class="list-wrapper">
     <turbo-frame id="flash"></turbo-frame>
-    <h2>Liste des Classes</h2>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Niveau</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for classe in classes %}
-          <tr>
-            <td>{{ classe.id }}</td>
-            <td>{{ classe.nom }}</td>
-            <td>{{ classe.niveau.nom }}</td>
-            <td>
-              <form method="post" action="{{ path('classe_delete', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray" onsubmit="return confirm('Confirmer la suppression ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete_classe_' ~ classe.id) }}" />
-                <button class="btn btn-danger btn-sm">Supprimer</button>
-              </form>
-              <form method="post" action="{{ path('classe_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
-                <button class="btn btn-success btn-sm">Créer un EDT</button>
-              </form>
-              <form method="post" action="{{ path('show_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
-                <button class="btn btn-info btn-sm">Voir l'EDT</button>
-              </form>
-            </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="4">Aucune classe trouvée.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+
+    <!-- En-tête de la liste -->
+    <header class="list-header">
+      <div class="list-title">
+        <div class="title-icon">📋</div>
+        <div>
+          <h2 class="title-text">Liste des Classes</h2>
+          <p class="title-subtitle">Gérez toutes les classes de votre établissement</p>
+        </div>
+      </div>
+    </header>
+
+    {% if classes is empty %}
+      <!-- État vide -->
+      <div class="empty-state">
+        <div class="empty-icon">🎓</div>
+        <h3 class="empty-title">Aucune classe créée</h3>
+        <p class="empty-message">Commencez par créer votre première classe pour organiser votre établissement.</p>
+        <div class="empty-action">
+          <a href="{{ path('classe_show', { nomOnglet: 'new' }) }}" class="custom-btn custom-btn-primary" data-turbo-frame="classe_tray">
+            <span class="btn-icon">➕</span>
+            Créer ma première classe
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <!-- Statistiques rapides -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">🎓</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ classes|length }}</div>
+            <div class="stat-label">Classes créées</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set niveaux = [] %}
+              {% for classe in classes %}
+                {% if classe.niveau.nom not in niveaux %}
+                  {% set niveaux = niveaux|merge([classe.niveau.nom]) %}
+                {% endif %}
+              {% endfor %}
+              {{ niveaux|length }}
+            </div>
+            <div class="stat-label">Niveaux représentés</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table des données -->
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">🏷️</span>
+                  Nom de la classe
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">🎯</span>
+                  Niveau
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">⚙️</span>
+                  Actions
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for classe in classes %}
+              <tr class="table-row">
+                <td>
+                  <div class="cell-content">
+                    <div class="cell-main">{{ classe.nom }}</div>
+                    <div class="cell-meta">ID: {{ classe.id }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <span class="badge-custom">
+                      <span>🎯</span>
+                      {{ classe.niveau.nom }}
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <form method="post" action="{{ path('classe_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
+                      <button type="submit" class="action-btn btn-create" title="Créer un emploi du temps">
+                        <span class="btn-icon">📅</span>
+                        <span class="btn-text">Créer EDT</span>
+                      </button>
+                    </form>
+
+                    <form method="post" action="{{ path('show_edt', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray">
+                      <button type="submit" class="action-btn btn-view" title="Voir l'emploi du temps">
+                        <span class="btn-icon">👁️</span>
+                        <span class="btn-text">Voir EDT</span>
+                      </button>
+                    </form>
+
+                    <form method="post" action="{{ path('classe_delete', { id: classe.id }) }}" style="display:inline" data-turbo-frame="classe_tray" onsubmit="return confirmDelete('Êtes-vous sûr de vouloir supprimer la classe {{ classe.nom }} ?');">
+                      <input type="hidden" name="_token" value="{{ csrf_token('delete_classe_' ~ classe.id) }}" />
+                      <button type="submit" class="action-btn btn-delete" title="Supprimer la classe">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Supprimer</span>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
   </div>
+
+  <style>
+    /* Styles spécifiques pour la liste */
+    .list-wrapper {
+      padding: var(--spacing-xl);
+    }
+    
+    .list-header {
+      margin-bottom: var(--spacing-xl);
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 2px solid var(--input-border);
+    }
+    
+    .list-title {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    
+    .title-icon {
+      font-size: 2.5rem;
+      opacity: 0.9;
+    }
+    
+    .title-text {
+      color: var(--accent-blue);
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .title-subtitle {
+      color: var(--text-muted);
+      margin: 0;
+      font-size: 1rem;
+    }
+    
+    /* En-têtes de tableau améliorés */
+    .th-content {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    
+    .th-icon {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+    
+    /* Contenu des cellules */
+    .cell-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+    }
+    
+    .cell-main {
+      font-weight: 600;
+      color: var(--text-light);
+    }
+    
+    .cell-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    /* Boutons d'action */
+    .action-buttons {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+    }
+    
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border: 1px solid;
+      border-radius: var(--border-radius-sm);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+      text-decoration: none;
+      background: none;
+    }
+    
+    .btn-create {
+      color: var(--success-green);
+      border-color: var(--success-green);
+    }
+    
+    .btn-create:hover {
+      background-color: var(--success-green);
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    .btn-view {
+      color: var(--info-blue);
+      border-color: var(--info-blue);
+    }
+    
+    .btn-view:hover {
+      background-color: var(--info-blue);
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    .btn-delete {
+      color: var(--danger-red);
+      border-color: var(--danger-red);
+    }
+    
+    .btn-delete:hover {
+      background-color: var(--danger-red);
+      color: white;
+      transform: translateY(-1px);
+    }
+    
+    .btn-text {
+      white-space: nowrap;
+    }
+    
+    /* Responsive pour les actions */
+    @media (max-width: 768px) {
+      .action-buttons {
+        flex-direction: column;
+      }
+    
+      .action-btn {
+        justify-content: center;
+        width: 100%;
+      }
+    
+      .btn-text {
+        display: none;
+      }
+    }
+    
+    /* Animation pour les lignes */
+    .table-row {
+      animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .table-row:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    .table-row:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .table-row:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+    .table-row:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+    .table-row:nth-child(5) {
+      animation-delay: 0.5s;
+    }
+  </style>
 </turbo-frame>

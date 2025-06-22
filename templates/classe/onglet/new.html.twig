@@ -1,18 +1,57 @@
 <turbo-frame id="classe_tray">
-  <div class="container mt-4">
-    <h2>Créer une Classe</h2>
+  <div class="form-wrapper">
+    <!-- En-tête du formulaire -->
+    <header class="form-header">
+      <div class="form-icon">🎓</div>
+      <h2 class="form-title">Créer une Classe</h2>
+      <p class="form-subtitle">Ajoutez une nouvelle classe à votre établissement</p>
+    </header>
+
+    <!-- Messages flash -->
     {% for message in app.flashes('success') %}
-      <div class="alert alert-success">{{ message }}</div>
+      <div class="alert alert-success">
+        <div class="alert-icon">🎉</div>
+        <div class="alert-content">{{ message }}</div>
+      </div>
     {% endfor %}
+
     {% for message in app.flashes('error') %}
-      <div class="alert alert-danger">{{ message }}</div>
+      <div class="alert alert-danger">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">{{ message }}</div>
+      </div>
     {% endfor %}
-    {{ form_start(form, { action: path('classe_show', { nomOnglet: 'new' }) }) }}
-    <div class="mb-3">{{ form_label(form.nom) }}
-      {{ form_widget(form.nom, { attr: { class: 'form-control' } }) }}</div>
-    <div class="mb-3">{{ form_label(form.niveau) }}
-      {{ form_widget(form.niveau, { attr: { class: 'form-control' } }) }}</div>
-    <button type="submit" class="btn btn-primary">Créer</button>
+
+    <!-- Formulaire -->
+    {{ form_start(form, { action: path('classe_show', { nomOnglet: 'new' }), attr: { class: 'entity-form' } }) }}
+
+    <div class="form-row">
+      <div class="form-group">
+        <div class="input-wrapper">
+          <div class="input-icon">🏷️</div>
+          {{ form_label(form.nom, 'Nom de la classe', { attr: { class: 'form-label' } }) }}
+          {{ form_widget(form.nom, { attr: { class: 'form-input', placeholder: 'Ex: Terminale S1, 1ère ES2...' } }) }}
+          {{ form_errors(form.nom) }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-wrapper">
+          <div class="input-icon">🎯</div>
+          {{ form_label(form.niveau, "Niveau d'études", { attr: { class: 'form-label' } }) }}
+          {{ form_widget(form.niveau, { attr: { class: 'form-input' } }) }}
+          {{ form_errors(form.niveau) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="custom-btn custom-btn-primary">
+        <span class="btn-icon">✅</span>
+        Créer la classe
+      </button>
+    </div>
+
     {{ form_end(form) }}
   </div>
 </turbo-frame>
