@@ -1,27 +1,420 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-  Professeurs
+  Professeurs - Gestion
 {% endblock %}
 
 {% block body %}
-  {{ parent() }}
-  <div class="container-fluid">
-    <div class="bg-light mt-5 w-100 d-flex">
-      <div id="navProfesseur" class="d-flex flex-grow-1 flex-row rounded p-3">
-        <nav class="w-100 d-flex">
-          <a href="{{ path('professeur_show', { nomOnglet: 'new' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="professeur_tray">Créer un professeur</a>
-          <a href="{{ path('professeur_show', { nomOnglet: 'list' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="professeur_tray">Liste des professeurs</a>
-          <a href="{{ path('professeur_show', { nomOnglet: 'assign' }) }}" class="py-2 flex-fill text-lg font-medium text-white bg-primary hover:bg-primary-dark text-center" data-turbo-frame="professeur_tray">Assigner</a>
-        </nav>
-      </div>
+  <section class="container-fluid px-4 py-3">
+    <!-- En-tête de la page -->
+    <header class="page-header">
+      <div class="header-icon">👨‍🏫</div>
+      <h1 class="header-title">Gestion des Professeurs</h1>
+      <p class="header-subtitle">Gérez les enseignants et leurs affectations pédagogiques</p>
+    </header>
+
+    <!-- Navigation principale -->
+    <div class="nav-wrapper">
+      <nav class="main-navigation" data-controller="tabs" data-tab-group="professeur" data-tabs-active-class="active">
+        <a href="{{ path('professeur_show', { nomOnglet: 'new' }) }}" class="nav-tab" data-tabs-target="tab" data-tab-id="new" data-action="click->tabs#selectTab" data-turbo-frame="professeur_tray">
+          <span class="nav-icon">➕</span>
+          <span class="nav-text">Créer un professeur</span>
+        </a>
+        <a href="{{ path('professeur_show', { nomOnglet: 'list' }) }}" class="nav-tab" data-tabs-target="tab" data-tab-id="list" data-action="click->tabs#selectTab" data-turbo-frame="professeur_tray">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Liste des professeurs</span>
+        </a>
+        <a href="{{ path('professeur_show', { nomOnglet: 'assign' }) }}" class="nav-tab" data-tabs-target="tab" data-tab-id="assign" data-action="click->tabs#selectTab" data-turbo-frame="professeur_tray">
+          <span class="nav-icon">🎯</span>
+          <span class="nav-text">Assigner</span>
+        </a>
+      </nav>
     </div>
-    <div class="flex-grow-1 m-2">
-      <div class="w-100 p-3 rounded shadow-sm bg-light">
+
+    <!-- Contenu principal -->
+    <div class="content-wrapper">
+      <div class="content-container">
         <turbo-frame id="professeur_tray" src="{{ path('professeur_show', { nomOnglet: app.session.get('professeur_active') ? app.session.get('professeur_active') : 'new' }) }}">
-          <p class="text-lg text-center text-muted">Chargement...</p>
+          <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Chargement en cours...</p>
+          </div>
         </turbo-frame>
       </div>
     </div>
-  </div>
+  </section>
+
+  <style>
+    /* Statistiques admin en ligne */
+    .admin-stats-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+      padding: 0 1rem;
+    }
+    
+    .admin-stats-row {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 1.5rem 2.5rem;
+      background: rgba(42, 45, 47, 0.3);
+      border: 2px solid var(--input-border);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .admin-stats-row::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.1), transparent);
+      transition: left 0.8s ease;
+    }
+    
+    .admin-stats-row:hover {
+      background: rgba(42, 45, 47, 0.4);
+      border-color: var(--accent-blue);
+      box-shadow: 0 8px 25px rgba(8, 164, 189, 0.15);
+      transform: translateY(-2px);
+    }
+    
+    .admin-stats-row:hover::before {
+      left: 100%;
+    }
+    
+    .admin-stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 120px;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .admin-stat-item:hover {
+      transform: translateY(-3px);
+    }
+    
+    .admin-stat-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+      transition: all 0.3s ease;
+    }
+    
+    .admin-stat-item:hover .admin-stat-icon {
+      transform: scale(1.1);
+    }
+    
+    .admin-stat-number {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+      transition: all 0.3s ease;
+    }
+    
+    .admin-stat-item:hover .admin-stat-number {
+      color: var(--title-green);
+      transform: scale(1.05);
+    }
+    
+    .admin-stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+    
+    .admin-stat-item:hover .admin-stat-label {
+      color: var(--text-light);
+    }
+    
+    .admin-stat-separator {
+      font-size: 1.5rem;
+      color: var(--input-border);
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+    
+    .admin-stats-row:hover .admin-stat-separator {
+      color: var(--accent-blue);
+      opacity: 0.8;
+    }
+    
+    /* Variables de couleurs (reprises du système) */
+    :root {
+      --primary-dark: #01172f;
+      --accent-blue: #08a4bd;
+      --title-green: #00635d;
+      --secondary-purple: #3b1f2b;
+      --form-dark: #181a1b;
+      --success-green: #28a745;
+      --warning-orange: #ffc107;
+      --danger-red: #dc3545;
+      --input-bg: #2a2d2f;
+      --input-border: #3a3d3f;
+      --text-light: #ffffff;
+      --text-muted: #b8bcc0;
+      --background-light: #f8f9fa;
+    }
+    
+    /* En-tête de la page */
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem 0;
+    }
+    
+    .header-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+    }
+    
+    .header-title {
+      color: var(--accent-blue);
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header-subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    /* Navigation principale */
+    .nav-wrapper {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .main-navigation {
+      display: flex;
+      background-color: var(--form-dark);
+      border: 2px solid var(--title-green);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(1, 23, 47, 0.15);
+    }
+    
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.25rem 2rem;
+      background-color: var(--form-dark);
+      color: var(--text-light);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      border-right: 2px solid var(--input-border);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .nav-tab:last-child {
+      border-right: none;
+    }
+    
+    .nav-tab::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.1), transparent);
+      transition: left 0.6s;
+    }
+    
+    .nav-tab:hover,
+    .nav-tab.active {
+      background-color: var(--accent-blue);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(8, 164, 189, 0.3);
+    }
+    
+    .nav-tab:hover::before {
+      left: 100%;
+    }
+    
+    .nav-tab:active {
+      transform: translateY(0);
+    }
+    
+    .nav-icon {
+      font-size: 1.2rem;
+    }
+    
+    .nav-text {
+      white-space: nowrap;
+    }
+    
+    /* Contenu principal */
+    .content-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    
+    .content-container {
+      width: 100%;
+      max-width: 1200px;
+      background-color: var(--form-dark);
+      border: 2px solid var(--title-green);
+      border-radius: 12px;
+      padding: 2.5rem;
+      box-shadow: 0 15px 35px rgba(1, 23, 47, 0.2);
+      animation: slideInUp 0.6s ease-out;
+    }
+    
+    /* Loading state */
+    .loading-container {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--input-border);
+      border-top: 4px solid var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1.5rem;
+    }
+    
+    .loading-text {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Responsive pour les statistiques admin */
+    @media (max-width: 768px) {
+      .header-title {
+        font-size: 2rem;
+      }
+    
+      .header-subtitle {
+        font-size: 1rem;
+      }
+    
+      .main-navigation {
+        flex-direction: column;
+        width: 100%;
+        max-width: 400px;
+      }
+    
+      .nav-tab {
+        border-right: none;
+        border-bottom: 2px solid var(--input-border);
+        padding: 1rem 1.5rem;
+        justify-content: center;
+      }
+    
+      .nav-tab:last-child {
+        border-bottom: none;
+      }
+    
+      .content-container {
+        padding: 1.5rem;
+        margin: 0 1rem;
+      }
+    
+      .admin-stats-row {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+      }
+    
+      .admin-stat-separator {
+        display: none;
+      }
+    
+      .admin-stat-item {
+        min-width: auto;
+        width: 100%;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        border: 1px solid var(--input-border);
+      }
+    
+      .admin-stat-number {
+        font-size: 1.5rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .nav-text {
+        font-size: 0.9rem;
+      }
+    
+      .header-icon {
+        font-size: 3rem;
+      }
+    
+      .admin-stats-container {
+        padding: 0 0.5rem;
+      }
+    
+      .admin-stats-row {
+        padding: 1rem;
+        gap: 1rem;
+      }
+    
+      .admin-stat-icon {
+        font-size: 1.5rem;
+      }
+    
+      .admin-stat-number {
+        font-size: 1.3rem;
+      }
+    
+      .admin-stat-label {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
 {% endblock %}

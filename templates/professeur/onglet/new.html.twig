@@ -107,6 +107,38 @@
       </div>
     </div>
 
+    <!-- Section Matières -->
+    <div class="form-section">
+      <h3 class="section-title">
+        <span class="section-icon">📚</span>
+        Matières enseignées
+      </h3>
+
+      <div class="form-row">
+        <div class="form-group full-width">
+          <div class="input-wrapper">
+            <div class="input-icon">📖</div>
+            {{ form_label(form.matieres, 'Sélectionnez les matières', { attr: { class: 'form-label' } }) }}
+            
+            <div class="matieres-container">
+              {{ form_widget(form.matieres, { 
+                attr: { 
+                  class: 'matieres-checkboxes'
+                } 
+              }) }}
+            </div>
+            
+            <div class="input-help">
+              <span class="help-icon">💡</span>
+              <span class="help-text">Sélectionnez une ou plusieurs matières que ce professeur pourra enseigner</span>
+            </div>
+            
+            {{ form_errors(form.matieres) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="form-actions">
       <button type="submit" class="custom-btn custom-btn-primary" data-controller="button-hover">
         <span class="btn-icon">✅</span>
@@ -118,6 +150,23 @@
   </div>
 
   <style>
+    /* Variables de couleurs */
+    :root {
+      --primary-dark: #01172f;
+      --accent-blue: #08a4bd;
+      --title-green: #00635d;
+      --secondary-purple: #3b1f2b;
+      --form-dark: #181a1b;
+      --success-green: #28a745;
+      --warning-orange: #ffc107;
+      --danger-red: #dc3545;
+      --input-bg: #2a2d2f;
+      --input-border: #3a3d3f;
+      --text-light: #ffffff;
+      --text-muted: #b8bcc0;
+    }
+
+    /* Input group existant */
     .input-group {
       display: flex;
       align-items: center;
@@ -136,5 +185,175 @@
       font-weight: 500;
       pointer-events: none;
     }
+
+    /* Full width pour la section matières */
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* Container des matières */
+    .matieres-container {
+      background: var(--input-bg);
+      border: 2px solid var(--input-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .matieres-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.05), transparent);
+      transition: left 0.8s ease;
+    }
+
+    .matieres-container:hover {
+      border-color: var(--accent-blue);
+      background: #323539;
+    }
+
+    .matieres-container:hover::before {
+      left: 100%;
+    }
+
+    .matieres-container:focus-within {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(8, 164, 189, 0.2);
+    }
+
+    /* Styles pour les checkboxes générées par Symfony */
+    .matieres-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .matieres-checkboxes input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .matieres-checkboxes label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px solid var(--input-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      color: var(--text-light);
+      font-weight: 500;
+      min-height: 60px;
+    }
+
+    .matieres-checkboxes label::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .matieres-checkboxes label:hover {
+      border-color: var(--accent-blue);
+      background: rgba(8, 164, 189, 0.05);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(8, 164, 189, 0.2);
+    }
+
+    .matieres-checkboxes label:hover::before {
+      left: 100%;
+    }
+
+    /* Checkbox personnalisée */
+    .matieres-checkboxes label::after {
+      content: '📖';
+      font-size: 1.2rem;
+      opacity: 0.8;
+      transition: all 0.3s ease;
+    }
+
+    .matieres-checkboxes input[type="checkbox"]:checked + label {
+      border-color: var(--title-green);
+      background: rgba(0, 99, 93, 0.15);
+      box-shadow: 0 0 0 1px var(--title-green);
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    .matieres-checkboxes input[type="checkbox"]:checked + label::after {
+      content: '✅';
+      transform: scale(1.1);
+    }
+
+    /* Focus states pour l'accessibilité */
+    .matieres-checkboxes input[type="checkbox"]:focus + label {
+      outline: 2px solid var(--accent-blue);
+      outline-offset: 2px;
+      border-color: var(--accent-blue);
+    }
+
+    /* Animation pour les éléments sélectionnés */
+    .matieres-checkboxes input[type="checkbox"]:checked + label {
+      animation: selectedPulse 0.4s ease-out;
+    }
+
+    @keyframes selectedPulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.02) translateY(-2px);
+      }
+      100% {
+        transform: scale(1) translateY(-2px);
+      }
+    }
+
+    /* Responsive pour les matières */
+    @media (max-width: 768px) {
+      .matieres-checkboxes {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .matieres-checkboxes label {
+        padding: 0.75rem;
+        min-height: 50px;
+      }
+
+      .matieres-container {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .matieres-checkboxes label {
+        font-size: 0.9rem;
+        gap: 0.75rem;
+      }
+
+      .matieres-checkboxes label::after {
+        font-size: 1rem;
+      }
+    }
   </style>
+
+
 </turbo-frame>

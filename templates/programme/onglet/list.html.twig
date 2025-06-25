@@ -27,32 +27,34 @@
         </div>
       </div>
     {% else %}
-      <!-- Statistiques rapides -->
-      <div class="stats-row" data-controller="stats-counter">
-        <div class="stat-card" data-stats-counter-target="item">
-          <div class="stat-icon">📋</div>
-          <div class="stat-content">
-            <div class="stat-value">{{ programmes|length }}</div>
-            <div class="stat-label">Programmes créés</div>
+      <!-- Statistiques rapides en ligne -->
+      <div class="admin-stats-container">
+        <div class="admin-stats-row" data-controller="stats-counter">
+          <div class="admin-stat-item" data-stats-counter-target="item">
+            <div class="admin-stat-icon">📋</div>
+            <div class="admin-stat-number">{{ programmes|length }}</div>
+            <div class="admin-stat-label">Programmes créés</div>
           </div>
-        </div>
-        <div class="stat-card" data-stats-counter-target="item">
-          <div class="stat-icon">⏰</div>
-          <div class="stat-content">
-            <div class="stat-value">
+          
+          <div class="admin-stat-separator">•</div>
+          
+          <div class="admin-stat-item" data-stats-counter-target="item">
+            <div class="admin-stat-icon">⏰</div>
+            <div class="admin-stat-number">
               {% set totalHeures = 0 %}
               {% for programme in programmes %}
                 {% set totalHeures = totalHeures + programme.nbHeures %}
               {% endfor %}
               {{ totalHeures }}
             </div>
-            <div class="stat-label">Heures totales</div>
+            <div class="admin-stat-label">Heures totales</div>
           </div>
-        </div>
-        <div class="stat-card" data-stats-counter-target="item">
-          <div class="stat-icon">📚</div>
-          <div class="stat-content">
-            <div class="stat-value">
+          
+          <div class="admin-stat-separator">•</div>
+          
+          <div class="admin-stat-item" data-stats-counter-target="item">
+            <div class="admin-stat-icon">📚</div>
+            <div class="admin-stat-number">
               {% set uniqueMatieres = [] %}
               {% for programme in programmes %}
                 {% if programme.matiere.nom not in uniqueMatieres %}
@@ -61,223 +63,854 @@
               {% endfor %}
               {{ uniqueMatieres|length }}
             </div>
-            <div class="stat-label">Matières différentes</div>
+            <div class="admin-stat-label">Matières différentes</div>
           </div>
         </div>
       </div>
 
-      <!-- Table des données -->
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>
-                <div class="th-content">
-                  <span class="th-icon">🎯</span>
-                  Niveau
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <span class="th-icon">📚</span>
-                  Matière
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <span class="th-icon">⏰</span>
-                  Volume horaire
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <span class="th-icon">📊</span>
-                  Aperçu
-                </div>
-              </th>
-              <th>
-                <div class="th-content">
-                  <span class="th-icon">⚙️</span>
-                  Actions
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for programme in programmes %}
-              <tr class="table-row" data-table-target="row">
-                <td>
-                  <div class="cell-content">
-                    <div class="cell-main">{{ programme.niveau.nom }}</div>
-                    <div class="cell-meta">Niveau d'études</div>
+      <!-- Container centré pour le tableau -->
+      <div class="table-container">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>
+                  <div class="th-content">
+                    <span class="th-icon">🎯</span>
+                    Niveau
                   </div>
-                </td>
-                <td>
-                  <div class="cell-content">
-                    <div class="matiere-info">
-                      <div class="matiere-color" style="background-color: {{ programme.matiere.couleur }};"></div>
-                      <div class="matiere-details">
-                        <div class="cell-main">{{ programme.matiere.nom }}</div>
-                        <div class="cell-meta">{{ programme.matiere.couleur }}</div>
-                      </div>
-                    </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span class="th-icon">📚</span>
+                    Matière
                   </div>
-                </td>
-                <td>
-                  <div class="cell-content">
-                    <span class="badge-custom">
-                      <span>⏰</span>
-                      {{ programme.nbHeures }}h/semaine
-                    </span>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span class="th-icon">⏰</span>
+                    Volume horaire
                   </div>
-                </td>
-                <td>
-                  <div class="cell-content">
-                    <div class="programme-preview" style="border-left-color: {{ programme.matiere.couleur }};">
-                      <div class="preview-header">
-                        <span class="preview-icon">📖</span>
-                        <span class="preview-subject">{{ programme.matiere.nom }}</span>
-                      </div>
-                      <div class="preview-details">
-                        <span class="preview-level">{{ programme.niveau.nom }}</span>
-                        <span class="preview-hours">{{ programme.nbHeures }}h</span>
-                      </div>
-                    </div>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span class="th-icon">📊</span>
+                    Aperçu
                   </div>
-                </td>
-                <td>
-                  <div class="action-buttons">
-                    <form method="post" 
-                          action="{{ path('programme_delete', { id: programme.id }) }}" 
-                          style="display:inline" 
-                          data-turbo-frame="programme_tray" 
-                          data-controller="confirm" 
-                          data-confirm-message-value="Êtes-vous sûr de vouloir supprimer ce programme ?" 
-                          data-action="submit->confirm#ask">
-                      <input type="hidden" name="_token" value="{{ csrf_token('delete_programme_' ~ programme.id) }}" />
-                      <button type="submit" 
-                              class="action-btn btn-delete" 
-                              title="Supprimer le programme" 
-                              data-controller="button-hover">
-                        <span class="btn-icon">🗑️</span>
-                        <span class="btn-text">Supprimer</span>
-                      </button>
-                    </form>
+                </th>
+                <th>
+                  <div class="th-content">
+                    <span class="th-icon">⚙️</span>
+                    Actions
                   </div>
-                </td>
+                </th>
               </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {% for programme in programmes %}
+                <tr class="table-row" data-table-target="row">
+                  <td>
+                    <div class="cell-content">
+                      <div class="niveau-info">
+                        <div class="niveau-avatar">
+                          <span class="avatar-icon">🎯</span>
+                        </div>
+                        <div class="niveau-details">
+                          <div class="cell-main">{{ programme.niveau.nom }}</div>
+                          <div class="cell-meta">Niveau d'études</div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-content">
+                      <div class="matiere-info">
+                        <div class="matiere-color" style="background-color: {{ programme.matiere.couleur }};"></div>
+                        <div class="matiere-details">
+                          <div class="cell-main">{{ programme.matiere.nom }}</div>
+                          <div class="cell-meta">{{ programme.matiere.couleur }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-content">
+                      <div class="hours-badge">
+                        <span class="hours-icon">⏰</span>
+                        <span class="hours-number">{{ programme.nbHeures }}</span>
+                        <span class="hours-unit">h/semaine</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-content">
+                      <div class="programme-preview" style="border-left-color: {{ programme.matiere.couleur }};">
+                        <div class="preview-header">
+                          <span class="preview-icon">📖</span>
+                          <span class="preview-subject">{{ programme.matiere.nom }}</span>
+                        </div>
+                        <div class="preview-details">
+                          <span class="preview-level">{{ programme.niveau.nom }}</span>
+                          <span class="preview-hours">{{ programme.nbHeures }}h</span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="cell-content">
+                      <div class="action-buttons">
+                        <form method="post" 
+                              action="{{ path('programme_delete', { id: programme.id }) }}" 
+                              style="display:inline" 
+                              data-turbo-frame="programme_tray" 
+                              data-controller="confirm" 
+                              data-confirm-message-value="Êtes-vous sûr de vouloir supprimer ce programme ?" 
+                              data-action="submit->confirm#ask">
+                          <input type="hidden" name="_token" value="{{ csrf_token('delete_programme_' ~ programme.id) }}" />
+                          <button type="submit" 
+                                  class="action-btn btn-delete" 
+                                  title="Supprimer le programme" 
+                                  data-controller="button-hover">
+                            <span class="btn-icon">🗑️</span>
+                            <span class="btn-text">Supprimer</span>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     {% endif %}
   </div>
 
   <style>
+    /* Variables de couleurs */
+    :root {
+      --primary-dark: #01172f;
+      --accent-blue: #08a4bd;
+      --title-green: #00635d;
+      --secondary-purple: #3b1f2b;
+      --form-dark: #181a1b;
+      --success-green: #28a745;
+      --warning-orange: #ffc107;
+      --danger-red: #dc3545;
+      --input-bg: #2a2d2f;
+      --input-border: #3a3d3f;
+      --text-light: #ffffff;
+      --text-muted: #b8bcc0;
+      --background-light: #f8f9fa;
+    }
+
+    /* Container principal */
+    .list-programme-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      color: var(--text-light);
+      padding: 0 1rem;
+    }
+
+    /* En-tête */
+    .display-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--title-green);
+    }
+
+    .header-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.9;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .header-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* Statistiques admin en ligne */
+    .admin-stats-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+      padding: 0 1rem;
+    }
+
+    .admin-stats-row {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      padding: 1.5rem 2.5rem;
+      background: rgba(42, 45, 47, 0.3);
+      border: 2px solid var(--input-border);
+      border-radius: 50px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-stats-row::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.1), transparent);
+      transition: left 0.8s ease;
+    }
+
+    .admin-stats-row:hover {
+      background: rgba(42, 45, 47, 0.4);
+      border-color: var(--accent-blue);
+      box-shadow: 0 8px 25px rgba(8, 164, 189, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .admin-stats-row:hover::before {
+      left: 100%;
+    }
+
+    .admin-stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 120px;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .admin-stat-item:hover {
+      transform: translateY(-3px);
+    }
+
+    .admin-stat-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.9;
+      transition: all 0.3s ease;
+    }
+
+    .admin-stat-item:hover .admin-stat-icon {
+      transform: scale(1.1);
+    }
+
+    .admin-stat-number {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .admin-stat-item:hover .admin-stat-number {
+      color: var(--title-green);
+      transform: scale(1.05);
+    }
+
+    .admin-stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+
+    .admin-stat-item:hover .admin-stat-label {
+      color: var(--text-light);
+    }
+
+    .admin-stat-separator {
+      font-size: 1.5rem;
+      color: var(--input-border);
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+
+    .admin-stats-row:hover .admin-stat-separator {
+      color: var(--accent-blue);
+      opacity: 0.8;
+    }
+
+    /* Container du tableau */
+    .table-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .table-responsive {
+      width: 100%;
+      max-width: 1200px;
+      border-radius: 12px;
+      background-color: var(--form-dark);
+      border: 2px solid var(--title-green);
+      box-shadow: 0 15px 35px rgba(1, 23, 47, 0.2);
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--form-dark);
+      color: var(--text-light);
+      margin: 0;
+    }
+
+    .data-table thead th {
+      background: linear-gradient(135deg, var(--primary-dark), var(--accent-blue));
+      color: var(--text-light);
+      font-weight: 700;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      border-bottom: 2px solid var(--input-border);
+      border-right: 1px solid var(--input-border);
+      transition: all 0.3s ease;
+    }
+
+    .data-table thead th:last-child {
+      border-right: none;
+    }
+
+    .data-table thead th:hover {
+      background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
+      transform: translateY(-1px);
+    }
+
+    .th-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .th-icon {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+
+    .data-table tbody td {
+      padding: 1.5rem 1rem;
+      border-bottom: 1px solid var(--input-border);
+      background-color: var(--form-dark);
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr {
+      transition: all 0.3s ease;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: rgba(8, 164, 189, 0.05);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .cell-content {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Niveau info avec avatar */
+    .niveau-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      justify-content: flex-start;
+    }
+
+    .niveau-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(8, 164, 189, 0.3);
+    }
+
+    .niveau-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(8, 164, 189, 0.4);
+    }
+
+    .avatar-icon {
+      font-size: 1.2rem;
+      color: white;
+      transition: transform 0.3s ease;
+    }
+
+    .niveau-avatar:hover .avatar-icon {
+      transform: scale(1.1);
+    }
+
+    .niveau-details {
+      flex: 1;
+      text-align: left;
+    }
+
+    .cell-main {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .cell-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Matière info */
     .matiere-info {
       display: flex;
       align-items: center;
       gap: 1rem;
+      justify-content: flex-start;
     }
 
     .matiere-color {
-      width: 24px;
-      height: 24px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       flex-shrink: 0;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .matiere-color::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .matiere-info:hover .matiere-color {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .matiere-info:hover .matiere-color::after {
+      opacity: 1;
     }
 
     .matiere-details {
       flex: 1;
+      text-align: left;
     }
 
+    /* Badge des heures */
+    .hours-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(135deg, rgba(8, 164, 189, 0.1), rgba(0, 99, 93, 0.1));
+      border: 2px solid var(--accent-blue);
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hours-badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(8, 164, 189, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .hours-badge:hover {
+      background: linear-gradient(135deg, rgba(8, 164, 189, 0.2), rgba(0, 99, 93, 0.2));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(8, 164, 189, 0.3);
+    }
+
+    .hours-badge:hover::before {
+      left: 100%;
+    }
+
+    .hours-icon {
+      font-size: 1rem;
+      color: var(--accent-blue);
+    }
+
+    .hours-number {
+      font-weight: 700;
+      color: var(--accent-blue);
+      font-size: 1.1rem;
+    }
+
+    .hours-unit {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    /* Aperçu programme */
     .programme-preview {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      padding: 0.75rem;
+      padding: 1rem;
       background: rgba(255, 255, 255, 0.03);
       border-left: 4px solid var(--accent-blue);
-      border-radius: 6px;
+      border-radius: 8px;
       transition: all 0.3s ease;
-      min-width: 160px;
+      min-width: 180px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .programme-preview::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+      transition: left 0.5s ease;
     }
 
     .programme-preview:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.08);
       transform: translateX(3px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .programme-preview:hover::before {
+      left: 100%;
     }
 
     .preview-header {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
     }
 
     .preview-icon {
-      font-size: 0.9rem;
+      font-size: 1rem;
+      opacity: 0.8;
     }
 
     .preview-subject {
       font-weight: 600;
       color: var(--text-light);
-      font-size: 0.9rem;
+      font-size: 1rem;
+      flex: 1;
     }
 
     .preview-details {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .preview-level {
+      font-size: 0.85rem;
+      color: var(--text-muted);
       font-weight: 500;
     }
 
     .preview-hours {
       font-family: 'Courier New', monospace;
-      font-weight: 600;
-      color: var(--accent-blue);
-    }
-
-    .badge-custom {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background-color: rgba(8, 164, 189, 0.1);
-      border: 1px solid var(--accent-blue);
-      border-radius: 20px;
+      font-weight: 700;
       color: var(--accent-blue);
       font-size: 0.9rem;
-      font-weight: 500;
+      background: rgba(8, 164, 189, 0.1);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    /* Boutons d'action */
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1rem;
+      border: 2px solid;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: none;
+      text-decoration: none;
+      min-width: 100px;
+      justify-content: center;
+    }
+
+    .btn-delete {
+      background: rgba(220, 53, 69, 0.1);
+      border-color: var(--danger-red);
+      color: var(--danger-red);
+    }
+
+    .btn-delete:hover {
+      background: var(--danger-red);
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-delete:active {
+      transform: translateY(0);
+    }
+
+    .btn-icon {
+      font-size: 1rem;
+    }
+
+    /* État vide */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      max-width: 600px;
+      margin: 3rem auto;
+      background: rgba(42, 45, 47, 0.3);
+      border: 2px solid var(--input-border);
+      border-radius: 12px;
+    }
+
+    .empty-icon {
+      font-size: 6rem;
+      margin-bottom: 2rem;
+      opacity: 0.7;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .empty-title {
+      color: var(--accent-blue);
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .empty-message {
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .empty-action {
+      margin-top: 2rem;
+    }
+
+    /* Boutons */
+    .custom-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1rem 2rem;
+      border: 2px solid;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: none;
+    }
+
+    .custom-btn-primary {
+      background-color: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+
+    .custom-btn-primary:hover {
+      background-color: var(--title-green);
+      border-color: var(--title-green);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 99, 93, 0.3);
+    }
+
+    .btn-icon {
+      font-size: 1.1rem;
+    }
+
+    /* Animations */
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     /* Responsive */
     @media (max-width: 768px) {
+      .admin-stats-row {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+      }
+
+      .admin-stat-separator {
+        display: none;
+      }
+
+      .admin-stat-item {
+        min-width: auto;
+        width: 100%;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        border: 1px solid var(--input-border);
+      }
+
+      .admin-stat-number {
+        font-size: 1.5rem;
+      }
+
+      .header-title {
+        font-size: 1.6rem;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+
+      .data-table {
+        min-width: 800px;
+      }
+
+      .niveau-info, .matiere-info {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+      }
+
+      .niveau-details, .matiere-details {
+        text-align: center;
+      }
+
+      .data-table tbody td {
+        padding: 1rem 0.5rem;
+      }
+
       .programme-preview {
         min-width: auto;
-        padding: 0.5rem;
+        padding: 0.75rem;
       }
 
       .preview-details {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.25rem;
+        gap: 0.5rem;
       }
 
-      .matiere-info {
-        gap: 0.75rem;
+      .action-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .action-btn {
+        width: 100%;
+        min-width: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .admin-stats-container {
+        padding: 0 0.5rem;
+      }
+
+      .admin-stats-row {
+        padding: 1rem;
+        gap: 1rem;
+      }
+
+      .admin-stat-icon {
+        font-size: 1.5rem;
+      }
+
+      .admin-stat-number {
+        font-size: 1.3rem;
+      }
+
+      .admin-stat-label {
+        font-size: 0.8rem;
+      }
+
+      .header-icon {
+        font-size: 4rem;
+      }
+
+      .empty-icon {
+        font-size: 4rem;
+      }
+
+      .empty-title {
+        font-size: 1.5rem;
+      }
+
+      .empty-message {
+        font-size: 1rem;
+      }
+
+      .btn-text {
+        display: none;
+      }
+
+      .action-btn {
+        min-width: 60px;
+        padding: 0.75rem 0.5rem;
       }
 
       .matiere-color {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
       }
     }
   </style>
