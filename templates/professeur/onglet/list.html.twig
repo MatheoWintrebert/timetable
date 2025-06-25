@@ -1,36 +1,198 @@
 <turbo-frame id="professeur_tray">
-  <div class="container mt-4">
-    <h2>Liste des Professeurs</h2>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Nombre d'heures max</th>
-          <th>Matières</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for professeur in professeurs %}
-          <tr>
-            <td>{{ professeur.nom }}</td>
-            <td>{{ professeur.prenom }}</td>
-            <td>{{ professeur.nbHeuresMax }}</td>
-            <td>
-              {% for matiere in professeur.matieres %}
-                {{ matiere.nom }}
-                {% if not loop.last %}
-                  ,
-                {% endif %}
+  <div class="list-professeur-container" data-controller="table">
+    <!-- En-tête de la liste -->
+    <header class="display-header">
+      <div class="header-icon">📋</div>
+      <h2 class="header-title">Liste des Professeurs</h2>
+      <p class="header-subtitle">Gérez tous les professeurs de votre établissement</p>
+    </header>
+
+    <!-- Flash container -->
+    <div id="flash-container"></div>
+
+    {% if professeurs is empty %}
+      <!-- État vide -->
+      <div class="empty-state">
+        <div class="empty-icon">👨‍🏫</div>
+        <h3 class="empty-title">Aucun professeur créé</h3>
+        <p class="empty-message">Commencez par ajouter votre premier professeur pour organiser votre équipe pédagogique.</p>
+        <div class="empty-action">
+          <a href="{{ path('professeur_show', { nomOnglet: 'new' }) }}" 
+             class="custom-btn custom-btn-primary" 
+             data-turbo-frame="professeur_tray" 
+             data-controller="button-hover">
+            <span class="btn-icon">➕</span>
+            Créer mon premier professeur
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <!-- Statistiques rapides -->
+      <div class="stats-row" data-controller="stats-counter">
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">👨‍🏫</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ professeurs|length }}</div>
+            <div class="stat-label">Professeurs</div>
+          </div>
+        </div>
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">⏰</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set totalHeures = 0 %}
+              {% for professeur in professeurs %}
+                {% set totalHeures = totalHeures + professeur.nbHeuresMax %}
               {% endfor %}
-            </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="4">Aucun professeur trouvé.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              {{ totalHeures }}
+            </div>
+            <div class="stat-label">Heures totales</div>
+          </div>
+        </div>
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">📚</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set totalMatieres = [] %}
+              {% for professeur in professeurs %}
+                {% for matiere in professeur.matieres %}
+                  {% if matiere.nom not in totalMatieres %}
+                    {% set totalMatieres = totalMatieres|merge([matiere.nom]) %}
+                  {% endif %}
+                {% endfor %}
+              {% endfor %}
+              {{ totalMatieres|length }}
+            </div>
+            <div class="stat-label">Matières enseignées</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table des données -->
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">👤</span>
+                  Nom
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">🆔</span>
+                  Prénom
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">⏰</span>
+                  Heures max
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">📚</span>
+                  Matières
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for professeur in professeurs %}
+              <tr class="table-row" data-table-target="row">
+                <td>
+                  <div class="cell-content">
+                    <div class="cell-main">{{ professeur.nom }}</div>
+                    <div class="cell-meta">Professeur</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <div class="cell-main">{{ professeur.prenom }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <span class="badge-custom">
+                      <span>⏰</span>
+                      {{ professeur.nbHeuresMax }}h/semaine
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    {% if professeur.matieres|length > 0 %}
+                      <div class="matieres-list">
+                        {% for matiere in professeur.matieres %}
+                          <span class="matiere-tag" style="border-left-color: {{ matiere.couleur }};">
+                            <span class="matiere-icon">📖</span>
+                            {{ matiere.nom }}
+                          </span>
+                          {% if not loop.last %}<br>{% endif %}
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <span class="no-matieres">Aucune matière assignée</span>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
   </div>
+
+  <style>
+    .matieres-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .matiere-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid var(--accent-blue);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-light);
+      transition: all 0.3s ease;
+    }
+
+    .matiere-tag:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(2px);
+    }
+
+    .matiere-icon {
+      font-size: 0.9rem;
+    }
+
+    .no-matieres {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+
+    .badge-custom {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: rgba(8, 164, 189, 0.1);
+      border: 1px solid var(--accent-blue);
+      border-radius: 20px;
+      color: var(--accent-blue);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+  </style>
 </turbo-frame>

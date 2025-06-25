@@ -1,20 +1,165 @@
 <turbo-frame id="programme_tray">
-  <div class="container mt-4">
-    <h2>Créer un Programme</h2>
-    {% for message in app.flashes('success') %}
-      <div class="alert alert-success">{{ message }}</div>
-    {% endfor %}
-    {% for message in app.flashes('error') %}
-      <div class="alert alert-danger">{{ message }}</div>
-    {% endfor %}
-    {{ form_start(form, { action: path('programme_show', { nomOnglet: 'new' }) }) }}
-    <div class="mb-3">{{ form_label(form.niveau) }}
-      {{ form_widget(form.niveau, { attr: { class: 'form-control' } }) }}</div>
-    <div class="mb-3">{{ form_label(form.matiere) }}
-      {{ form_widget(form.matiere, { attr: { class: 'form-control' } }) }}</div>
-    <div class="mb-3">{{ form_label(form.nbHeures) }}
-      {{ form_widget(form.nbHeures, { attr: { class: 'form-control' } }) }}</div>
-    <button type="submit" class="btn btn-primary">Créer</button>
+  <div class="create-programme-container" data-controller="form-validation">
+    <!-- En-tête du formulaire -->
+    <header class="form-header">
+      <div class="form-icon">📋</div>
+      <h2 class="form-title">Créer un Programme</h2>
+      <p class="form-subtitle">Définissez un programme pédagogique avec le nombre d'heures par semaine</p>
+    </header>
+
+    <!-- Messages flash -->
+    <div id="flash-container">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="alert alert-{{ label }}" data-controller="flash" data-flash-auto-hide-value="true" data-flash-delay-value="5000">
+            <div class="alert-icon">
+              {% if label == 'success' %}
+                🎉
+              {% elseif label == 'error' %}
+                ⚠️
+              {% else %}
+                ℹ️
+              {% endif %}
+            </div>
+            <div class="alert-content">{{ message }}</div>
+            <button type="button" class="alert-close" data-action="click->flash#remove">×</button>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+
+    <!-- Formulaire -->
+    {{ form_start(form, { 
+      action: path('programme_show', { nomOnglet: 'new' }), 
+      attr: { 
+        class: 'programme-form', 
+        'data-action': 'submit->form-validation#validateForm' 
+      } 
+    }) }}
+
+    <div class="form-section">
+      <h3 class="section-title">
+        <span class="section-icon">🎯</span>
+        Configuration du programme
+      </h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="input-wrapper">
+            <div class="input-icon">🎯</div>
+            {{ form_label(form.niveau, 'Niveau d\'études', { attr: { class: 'form-label' } }) }}
+            {{ form_widget(form.niveau, { 
+              attr: { 
+                class: 'form-input', 
+                'data-form-validation-target': 'input', 
+                required: true 
+              } 
+            }) }}
+            {{ form_errors(form.niveau) }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="input-wrapper">
+            <div class="input-icon">📚</div>
+            {{ form_label(form.matiere, 'Matière', { attr: { class: 'form-label' } }) }}
+            {{ form_widget(form.matiere, { 
+              attr: { 
+                class: 'form-input', 
+                'data-form-validation-target': 'input', 
+                required: true 
+              } 
+            }) }}
+            {{ form_errors(form.matiere) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3 class="section-title">
+        <span class="section-icon">⏰</span>
+        Volume horaire
+      </h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="input-wrapper">
+            <div class="input-icon">📊</div>
+            {{ form_label(form.nbHeures, 'Nombre d\'heures par semaine', { attr: { class: 'form-label' } }) }}
+            <div class="input-group">
+              {{ form_widget(form.nbHeures, { 
+                attr: { 
+                  class: 'form-input', 
+                  min: 1, 
+                  max: 20, 
+                  'data-form-validation-target': 'input', 
+                  required: true,
+                  placeholder: 'Ex: 4'
+                } 
+              }) }}
+              <span class="input-suffix">heures/semaine</span>
+            </div>
+            {{ form_errors(form.nbHeures) }}
+            <div class="input-help">
+              <span class="help-icon">💡</span>
+              <span class="help-text">Généralement entre 1 et 8 heures par semaine selon la matière</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="custom-btn custom-btn-primary" data-controller="button-hover">
+        <span class="btn-icon">✅</span>
+        Créer le programme
+      </button>
+    </div>
+
     {{ form_end(form) }}
   </div>
+
+  <style>
+    .input-group {
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .input-group .form-input {
+      padding-right: 140px;
+    }
+
+    .input-suffix {
+      position: absolute;
+      right: 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      pointer-events: none;
+    }
+
+    .input-help {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(8, 164, 189, 0.05);
+      border: 1px solid var(--accent-blue);
+      border-radius: 6px;
+    }
+
+    .help-icon {
+      font-size: 1rem;
+      color: var(--accent-blue);
+    }
+
+    .help-text {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+  </style>
 </turbo-frame>

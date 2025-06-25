@@ -1,33 +1,284 @@
 <turbo-frame id="programme_tray">
-  <div class="container mt-4">
-    <h2>Liste des Programmes</h2>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>Niveau</th>
-          <th>Matière</th>
-          <th>Heures / semaine</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for programme in programmes %}
-          <tr>
-            <td>{{ programme.niveau.nom }}</td>
-            <td>{{ programme.matiere.nom }}</td>
-            <td>{{ programme.nbHeures }}</td>
-            <td>
-              <form method="post" action="{{ path('programme_delete', { id: programme.id }) }}" style="display:inline" data-turbo-frame="programme_tray" onsubmit="return confirm('Confirmer la suppression ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete_programme_' ~ programme.id) }}" />
-                <button class="btn btn-danger btn-sm">Supprimer</button>
-              </form>
-            </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="3">Aucun programme trouvé.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="list-programme-container" data-controller="table">
+    <!-- En-tête de la liste -->
+    <header class="display-header">
+      <div class="header-icon">📋</div>
+      <h2 class="header-title">Liste des Programmes</h2>
+      <p class="header-subtitle">Gérez tous les programmes pédagogiques de votre établissement</p>
+    </header>
+
+    <!-- Flash container -->
+    <div id="flash-container"></div>
+
+    {% if programmes is empty %}
+      <!-- État vide -->
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3 class="empty-title">Aucun programme créé</h3>
+        <p class="empty-message">Commencez par créer votre premier programme pédagogique pour définir les volumes horaires.</p>
+        <div class="empty-action">
+          <a href="{{ path('programme_show', { nomOnglet: 'new' }) }}" 
+             class="custom-btn custom-btn-primary" 
+             data-turbo-frame="programme_tray" 
+             data-controller="button-hover">
+            <span class="btn-icon">➕</span>
+            Créer mon premier programme
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <!-- Statistiques rapides -->
+      <div class="stats-row" data-controller="stats-counter">
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">📋</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ programmes|length }}</div>
+            <div class="stat-label">Programmes créés</div>
+          </div>
+        </div>
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">⏰</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set totalHeures = 0 %}
+              {% for programme in programmes %}
+                {% set totalHeures = totalHeures + programme.nbHeures %}
+              {% endfor %}
+              {{ totalHeures }}
+            </div>
+            <div class="stat-label">Heures totales</div>
+          </div>
+        </div>
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">📚</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set uniqueMatieres = [] %}
+              {% for programme in programmes %}
+                {% if programme.matiere.nom not in uniqueMatieres %}
+                  {% set uniqueMatieres = uniqueMatieres|merge([programme.matiere.nom]) %}
+                {% endif %}
+              {% endfor %}
+              {{ uniqueMatieres|length }}
+            </div>
+            <div class="stat-label">Matières différentes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table des données -->
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">🎯</span>
+                  Niveau
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">📚</span>
+                  Matière
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">⏰</span>
+                  Volume horaire
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">📊</span>
+                  Aperçu
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">⚙️</span>
+                  Actions
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for programme in programmes %}
+              <tr class="table-row" data-table-target="row">
+                <td>
+                  <div class="cell-content">
+                    <div class="cell-main">{{ programme.niveau.nom }}</div>
+                    <div class="cell-meta">Niveau d'études</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <div class="matiere-info">
+                      <div class="matiere-color" style="background-color: {{ programme.matiere.couleur }};"></div>
+                      <div class="matiere-details">
+                        <div class="cell-main">{{ programme.matiere.nom }}</div>
+                        <div class="cell-meta">{{ programme.matiere.couleur }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <span class="badge-custom">
+                      <span>⏰</span>
+                      {{ programme.nbHeures }}h/semaine
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <div class="programme-preview" style="border-left-color: {{ programme.matiere.couleur }};">
+                      <div class="preview-header">
+                        <span class="preview-icon">📖</span>
+                        <span class="preview-subject">{{ programme.matiere.nom }}</span>
+                      </div>
+                      <div class="preview-details">
+                        <span class="preview-level">{{ programme.niveau.nom }}</span>
+                        <span class="preview-hours">{{ programme.nbHeures }}h</span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <form method="post" 
+                          action="{{ path('programme_delete', { id: programme.id }) }}" 
+                          style="display:inline" 
+                          data-turbo-frame="programme_tray" 
+                          data-controller="confirm" 
+                          data-confirm-message-value="Êtes-vous sûr de vouloir supprimer ce programme ?" 
+                          data-action="submit->confirm#ask">
+                      <input type="hidden" name="_token" value="{{ csrf_token('delete_programme_' ~ programme.id) }}" />
+                      <button type="submit" 
+                              class="action-btn btn-delete" 
+                              title="Supprimer le programme" 
+                              data-controller="button-hover">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Supprimer</span>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
   </div>
+
+  <style>
+    .matiere-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .matiere-color {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      flex-shrink: 0;
+    }
+
+    .matiere-details {
+      flex: 1;
+    }
+
+    .programme-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      min-width: 160px;
+    }
+
+    .programme-preview:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(3px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .preview-icon {
+      font-size: 0.9rem;
+    }
+
+    .preview-subject {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .preview-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .preview-level {
+      font-weight: 500;
+    }
+
+    .preview-hours {
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+
+    .badge-custom {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: rgba(8, 164, 189, 0.1);
+      border: 1px solid var(--accent-blue);
+      border-radius: 20px;
+      color: var(--accent-blue);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .programme-preview {
+        min-width: auto;
+        padding: 0.5rem;
+      }
+
+      .preview-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+
+      .matiere-info {
+        gap: 0.75rem;
+      }
+
+      .matiere-color {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  </style>
 </turbo-frame>

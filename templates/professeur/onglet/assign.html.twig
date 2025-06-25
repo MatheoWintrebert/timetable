@@ -1,44 +1,232 @@
 <turbo-frame id="professeur_tray">
-  <div class="container mt-4">
-    <h2>Assigner un Professeur à un Utilisateur</h2>
+  <div class="assign-professeur-container" data-controller="form-validation">
+    <!-- En-tête du formulaire -->
+    <header class="form-header">
+      <div class="form-icon">🔗</div>
+      <h2 class="form-title">Assigner un Professeur</h2>
+      <p class="form-subtitle">Liez un utilisateur à un profil professeur</p>
+    </header>
 
-    {% for message in app.flashes('success') %}
-      <div class="alert alert-success">{{ message }}</div>
-    {% endfor %}
-    {% for message in app.flashes('error') %}
-      <div class="alert alert-danger">{{ message }}</div>
-    {% endfor %}
+    <!-- Messages flash -->
+    <div id="flash-container">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="alert alert-{{ label }}" data-controller="flash" data-flash-auto-hide-value="true" data-flash-delay-value="5000">
+            <div class="alert-icon">
+              {% if label == 'success' %}
+                🎉
+              {% elseif label == 'error' %}
+                ⚠️
+              {% else %}
+                ℹ️
+              {% endif %}
+            </div>
+            <div class="alert-content">{{ message }}</div>
+            <button type="button" class="alert-close" data-action="click->flash#remove">×</button>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
 
-    <form method="post" action="{{ path('professeur_show', { nomOnglet: 'assign' }) }}">
-      <div class="row mb-3">
-        <div class="col">
-          <label for="user">Utilisateur</label>
-          <select class="form-control" name="user" id="user" required>
-            {% for user in users %}
-              <option value="{{ user.id }}">{{ user.email }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col">
-          <label for="professeur">Professeur</label>
-          <select class="form-control" name="professeur" id="professeur" required>
-            {% for prof in professeurs %}
-              <option value="{{ prof.id }}">{{ prof.nom }} {{ prof.prenom }}</option>
-            {% endfor %}
-          </select>
+    <!-- Formulaire d'assignation -->
+    <form method="post" action="{{ path('professeur_show', { nomOnglet: 'assign' }) }}" class="assign-form">
+      <div class="form-section">
+        <h3 class="section-title">
+          <span class="section-icon">🔗</span>
+          Nouvelle assignation
+        </h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <div class="input-wrapper">
+              <div class="input-icon">👤</div>
+              <label for="user" class="form-label">Utilisateur</label>
+              <select class="form-input" name="user" id="user" required>
+                <option value="">Sélectionnez un utilisateur</option>
+                {% for user in users %}
+                  <option value="{{ user.id }}">{{ user.email }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="input-wrapper">
+              <div class="input-icon">👨‍🏫</div>
+              <label for="professeur" class="form-label">Professeur</label>
+              <select class="form-input" name="professeur" id="professeur" required>
+                <option value="">Sélectionnez un professeur</option>
+                {% for prof in professeurs %}
+                  <option value="{{ prof.id }}">{{ prof.nom }} {{ prof.prenom }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-      <button type="submit" class="btn btn-primary">Assigner</button>
+
+      <div class="form-actions">
+        <button type="submit" class="custom-btn custom-btn-primary" data-controller="button-hover">
+          <span class="btn-icon">🔗</span>
+          Assigner
+        </button>
+      </div>
     </form>
 
-    <hr />
-    <h3>Utilisateurs déjà assignés :</h3>
-    <ul>
-      {% for user in users %}
-        {% if user.professeur %}
-          <li>{{ user.email }} → {{ user.professeur.nom }} {{ user.professeur.prenom }}</li>
-        {% endif %}
-      {% endfor %}
-    </ul>
+    <!-- Liste des assignations existantes -->
+    <div class="assignments-section">
+      <h3 class="section-title">
+        <span class="section-icon">📋</span>
+        Utilisateurs déjà assignés
+      </h3>
+
+      {% set assignedUsers = users|filter(user => user.professeur) %}
+      
+      {% if assignedUsers is empty %}
+        <div class="empty-state-small">
+          <div class="empty-icon-small">🔗</div>
+          <p class="empty-message-small">Aucune assignation pour le moment</p>
+        </div>
+      {% else %}
+        <div class="assignments-list">
+          {% for user in assignedUsers %}
+            <div class="assignment-item">
+              <div class="assignment-user">
+                <div class="user-icon">👤</div>
+                <div class="user-details">
+                  <div class="user-email">{{ user.email }}</div>
+                  <div class="user-meta">Utilisateur système</div>
+                </div>
+              </div>
+              <div class="assignment-arrow">→</div>
+              <div class="assignment-professor">
+                <div class="professor-icon">👨‍🏫</div>
+                <div class="professor-details">
+                  <div class="professor-name">{{ user.professeur.nom }} {{ user.professeur.prenom }}</div>
+                  <div class="professor-meta">{{ user.professeur.nbHeuresMax }}h/semaine</div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
   </div>
+
+  <style>
+    .assign-professeur-container {
+      max-width: 900px;
+      margin: 0 auto;
+      color: var(--text-light);
+    }
+
+    .assignments-section {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--title-green);
+    }
+
+    .assignments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .assignment-item {
+      display: flex;
+      align-items: center;
+      padding: 1.5rem;
+      background: rgba(42, 45, 47, 0.3);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .assignment-item:hover {
+      background: rgba(8, 164, 189, 0.05);
+      border-color: var(--accent-blue);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .assignment-user,
+    .assignment-professor {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+    }
+
+    .user-icon,
+    .professor-icon {
+      font-size: 2rem;
+      opacity: 0.8;
+    }
+
+    .user-details,
+    .professor-details {
+      flex: 1;
+    }
+
+    .user-email,
+    .professor-name {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 1rem;
+    }
+
+    .user-meta,
+    .professor-meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .assignment-arrow {
+      font-size: 1.5rem;
+      color: var(--accent-blue);
+      margin: 0 1rem;
+      opacity: 0.8;
+    }
+
+    .empty-state-small {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(42, 45, 47, 0.3);
+      border: 1px solid var(--input-border);
+      border-radius: 12px;
+    }
+
+    .empty-icon-small {
+      font-size: 3rem;
+      opacity: 0.6;
+      margin-bottom: 1rem;
+    }
+
+    .empty-message-small {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .assignment-item {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+      }
+
+      .assignment-arrow {
+        transform: rotate(90deg);
+        margin: 0.5rem 0;
+      }
+
+      .assignment-user,
+      .assignment-professor {
+        justify-content: center;
+        width: 100%;
+      }
+    }
+  </style>
 </turbo-frame>

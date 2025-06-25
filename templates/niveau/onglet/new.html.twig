@@ -1,16 +1,74 @@
 <turbo-frame id="niveau_tray">
-  <div class="container mt-4">
-    <h2>Créer un Niveau</h2>
-    {% for message in app.flashes('success') %}
-      <div class="alert alert-success">{{ message }}</div>
-    {% endfor %}
-    {% for message in app.flashes('error') %}
-      <div class="alert alert-danger">{{ message }}</div>
-    {% endfor %}
-    {{ form_start(form, { action: path('niveau_show', { nomOnglet: 'new' }) }) }}
-    <div class="mb-3">{{ form_label(form.nom) }}
-      {{ form_widget(form.nom, { attr: { class: 'form-control' } }) }}</div>
-    <button type="submit" class="btn btn-primary">Créer</button>
+  <div class="create-niveau-container" data-controller="form-validation">
+    <!-- En-tête du formulaire -->
+    <header class="form-header">
+      <div class="form-icon">🎯</div>
+      <h2 class="form-title">Créer un Niveau</h2>
+      <p class="form-subtitle">Ajoutez un nouveau niveau d'études à votre établissement</p>
+    </header>
+
+    <!-- Messages flash -->
+    <div id="flash-container">
+      {% for label, messages in app.flashes %}
+        {% for message in messages %}
+          <div class="alert alert-{{ label }}" data-controller="flash" data-flash-auto-hide-value="true" data-flash-delay-value="5000">
+            <div class="alert-icon">
+              {% if label == 'success' %}
+                🎉
+              {% elseif label == 'error' %}
+                ⚠️
+              {% else %}
+                ℹ️
+              {% endif %}
+            </div>
+            <div class="alert-content">{{ message }}</div>
+            <button type="button" class="alert-close" data-action="click->flash#remove">×</button>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+
+    <!-- Formulaire -->
+    {{ form_start(form, { 
+      action: path('niveau_show', { nomOnglet: 'new' }), 
+      attr: { 
+        class: 'niveau-form', 
+        'data-action': 'submit->form-validation#validateForm' 
+      } 
+    }) }}
+
+    <div class="form-section">
+      <h3 class="section-title">
+        <span class="section-icon">📝</span>
+        Informations du niveau
+      </h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="input-wrapper">
+            <div class="input-icon">🎯</div>
+            {{ form_label(form.nom, 'Nom du niveau', { attr: { class: 'form-label' } }) }}
+            {{ form_widget(form.nom, { 
+              attr: { 
+                class: 'form-input', 
+                placeholder: 'Ex: Sixième, Terminale, BTS...', 
+                'data-form-validation-target': 'input', 
+                required: true 
+              } 
+            }) }}
+            {{ form_errors(form.nom) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="custom-btn custom-btn-primary" data-controller="button-hover">
+        <span class="btn-icon">✅</span>
+        Créer le niveau
+      </button>
+    </div>
+
     {{ form_end(form) }}
   </div>
 </turbo-frame>

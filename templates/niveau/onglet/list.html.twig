@@ -1,32 +1,134 @@
 <turbo-frame id="niveau_tray">
-  <div class="container mt-4">
-    <h2>Liste des Niveaux</h2>
-    <table class="table table-bordered">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for niveau in niveaux %}
-          <tr>
-            <td>{{ niveau.id }}</td>
-            <td>{{ niveau.nom }}</td>
-            <td>
-              <form method="post" action="{{ path('niveau_delete', { id: niveau.id }) }}" style="display:inline" data-turbo-frame="niveau_tray" onsubmit="return confirm('Confirmer la suppression ?');">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete_niveau_' ~ niveau.id) }}" />
-                <button class="btn btn-danger btn-sm">Supprimer</button>
-              </form>
-            </td>
-          </tr>
-        {% else %}
-          <tr>
-            <td colspan="3">Aucun niveau trouvé.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="list-niveau-container" data-controller="table">
+    <!-- En-tête de la liste -->
+    <header class="display-header">
+      <div class="header-icon">📋</div>
+      <h2 class="header-title">Liste des Niveaux</h2>
+      <p class="header-subtitle">Gérez tous les niveaux d'études de votre établissement</p>
+    </header>
+
+    <!-- Flash container -->
+    <div id="flash-container"></div>
+
+    {% if niveaux is empty %}
+      <!-- État vide -->
+      <div class="empty-state">
+        <div class="empty-icon">🎯</div>
+        <h3 class="empty-title">Aucun niveau créé</h3>
+        <p class="empty-message">Commencez par créer votre premier niveau d'études pour organiser votre établissement.</p>
+        <div class="empty-action">
+          <a href="{{ path('niveau_show', { nomOnglet: 'new' }) }}" 
+             class="custom-btn custom-btn-primary" 
+             data-turbo-frame="niveau_tray" 
+             data-controller="button-hover">
+            <span class="btn-icon">➕</span>
+            Créer mon premier niveau
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <!-- Statistiques rapides -->
+      <div class="stats-row" data-controller="stats-counter">
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ niveaux|length }}</div>
+            <div class="stat-label">Niveaux créés</div>
+          </div>
+        </div>
+        <div class="stat-card" data-stats-counter-target="item">
+          <div class="stat-icon">📚</div>
+          <div class="stat-content">
+            <div class="stat-value">
+              {% set totalClasses = 0 %}
+              {% for niveau in niveaux %}
+                {% set totalClasses = totalClasses + niveau.classes|length %}
+              {% endfor %}
+              {{ totalClasses }}
+            </div>
+            <div class="stat-label">Classes associées</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table des données -->
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">🔢</span>
+                  ID
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">🏷️</span>
+                  Nom du niveau
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">📊</span>
+                  Classes
+                </div>
+              </th>
+              <th>
+                <div class="th-content">
+                  <span class="th-icon">⚙️</span>
+                  Actions
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for niveau in niveaux %}
+              <tr class="table-row" data-table-target="row">
+                <td>
+                  <div class="cell-content">
+                    <div class="cell-main">#{{ niveau.id }}</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <div class="cell-main">{{ niveau.nom }}</div>
+                    <div class="cell-meta">Niveau d'études</div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-content">
+                    <span class="badge-custom">
+                      <span>📚</span>
+                      {{ niveau.classes|length }} classe(s)
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <form method="post" 
+                          action="{{ path('niveau_delete', { id: niveau.id }) }}" 
+                          style="display:inline" 
+                          data-turbo-frame="niveau_tray" 
+                          data-controller="confirm" 
+                          data-confirm-message-value="Êtes-vous sûr de vouloir supprimer le niveau {{ niveau.nom }} ?" 
+                          data-action="submit->confirm#ask">
+                      <input type="hidden" name="_token" value="{{ csrf_token('delete_niveau_' ~ niveau.id) }}" />
+                      <button type="submit" 
+                              class="action-btn btn-delete" 
+                              title="Supprimer le niveau" 
+                              data-controller="button-hover">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Supprimer</span>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
   </div>
 </turbo-frame>

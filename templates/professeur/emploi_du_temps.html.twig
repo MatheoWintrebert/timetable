@@ -1,44 +1,444 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Emploi du Temps{% endblock %}
+{% block title %}
+  Emploi du Temps - {{ professeur.nom }} {{ professeur.prenom }}
+{% endblock %}
 
 {% block body %}
-    {% include ('_partials/header.html.twig') %}
-    <div class="container mt-5">
-        <h1 class="mb-4">Emploi du Temps</h1>
+  <section class="container-fluid px-4 py-3">
+    <!-- En-tête de la page -->
+    <header class="page-header">
+      <div class="header-icon">📅</div>
+      <h1 class="header-title">Emploi du Temps</h1>
+      <p class="header-subtitle">Planning de {{ professeur.nom }} {{ professeur.prenom }}</p>
+    </header>
 
-        {# Bouton pour générer l'Emploi du Temps #}
-        <form action="{{ path('app_edt_generate', {id: professeur.id}) }}" method="post">
-            <button type="submit" data-turbo="false" name="generate" value="true" class="btn btn-primary mb-3">Générer l'Emploi du Temps</button>
+    <!-- Actions principales -->
+    <div class="action-section">
+      <div class="action-wrapper">
+        <form action="{{ path('app_edt_generate', {id: professeur.id}) }}" method="post" class="generate-form">
+          <button type="submit" 
+                  data-turbo="false" 
+                  name="generate" 
+                  value="true" 
+                  class="custom-btn custom-btn-primary"
+                  data-controller="button-hover">
+            <span class="btn-icon">⚡</span>
+            Générer l'Emploi du Temps
+          </button>
         </form>
-
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th>Heure</th>
-                <th>Lundi</th>
-                <th>Mardi</th>
-                <th>Mercredi</th>
-                <th>Jeudi</th>
-                <th>Vendredi</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for hour in 8..17 %}
-                <tr>
-                    <td>{{ hour }}:00 - {{ hour + 1 }}:00</td>
-                    {% for day in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
-                        <td>
-                            {% if emploiDuTemps[day] is not null and emploiDuTemps[day][hour] is not null %}
-                                {{ emploiDuTemps[day][hour].nom }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+      </div>
     </div>
+
+    <!-- Emploi du temps -->
+    <div class="schedule-container">
+      {% if emploiDuTemps is not empty %}
+        <!-- Statistiques rapides -->
+        <div class="stats-row" data-controller="stats-counter">
+          <div class="stat-card" data-stats-counter-target="item">
+            <div class="stat-icon">📚</div>
+            <div class="stat-content">
+              <div class="stat-value">
+                {% set totalCours = 0 %}
+                {% for day, hours in emploiDuTemps %}
+                  {% for hour, matiere in hours %}
+                    {% if matiere %}
+                      {% set totalCours = totalCours + 1 %}
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
+                {{ totalCours }}
+              </div>
+              <div class="stat-label">Heures de cours</div>
+            </div>
+          </div>
+          
+          <div class="stat-card" data-stats-counter-target="item">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+              <div class="stat-value">5</div>
+              <div class="stat-label">Jours de cours</div>
+            </div>
+          </div>
+          
+          <div class="stat-card" data-stats-counter-target="item">
+            <div class="stat-icon">⏰</div>
+            <div class="stat-content">
+              <div class="stat-value">{{ professeur.nbHeuresMax }}</div>
+              <div class="stat-label">Heures max/semaine</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau d'emploi du temps -->
+        <div class="schedule-table-wrapper">
+          <table class="schedule-table">
+            <thead>
+              <tr class="schedule-header">
+                <th class="time-header">
+                  <div class="time-header-content">
+                    <span class="time-icon">🕐</span>
+                    <span class="time-text">Heure</span>
+                  </div>
+                </th>
+                {% for day in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+                  <th class="day-header">
+                    <div class="day-header-content">
+                      <span class="day-icon">
+                        {% if day == 'Lundi' %}🌟
+                        {% elseif day == 'Mardi' %}⚡
+                        {% elseif day == 'Mercredi' %}🔥
+                        {% elseif day == 'Jeudi' %}💫
+                        {% elseif day == 'Vendredi' %}🎯
+                        {% endif %}
+                      </span>
+                      <span class="day-name">{{ day }}</span>
+                    </div>
+                  </th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody class="schedule-body">
+              {% for hour in 8..17 %}
+                <tr class="schedule-row" data-hour="{{ hour }}">
+                  <td class="time-cell">
+                    <div class="time-content">
+                      <div class="time-range">{{ hour }}:00 - {{ hour + 1 }}:00</div>
+                      <div class="time-period">
+                        {% if hour < 12 %}Matin
+                        {% elseif hour == 12 %}Midi
+                        {% else %}Après-midi
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  {% for day in ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'] %}
+                    <td class="course-cell" data-day="{{ day }}" data-hour="{{ hour }}">
+                      {% if emploiDuTemps[day] is defined and emploiDuTemps[day][hour] is defined and emploiDuTemps[day][hour] is not null %}
+                        <div class="course-content has-course">
+                          <div class="course-header">
+                            <span class="course-icon">📖</span>
+                            <span class="course-name">{{ emploiDuTemps[day][hour].nom }}</span>
+                          </div>
+                          <div class="course-time">{{ hour }}h - {{ hour + 1 }}h</div>
+                        </div>
+                      {% else %}
+                        <div class="course-content empty-course">
+                          <div class="empty-indicator">
+                            <span class="empty-icon">—</span>
+                            <span class="empty-text">Libre</span>
+                          </div>
+                        </div>
+                      {% endif %}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <!-- État vide -->
+        <div class="empty-schedule">
+          <div class="empty-icon">📅</div>
+          <h3 class="empty-title">Aucun emploi du temps généré</h3>
+          <p class="empty-message">Cliquez sur "Générer l'Emploi du Temps" pour créer automatiquement votre planning.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <style>
+    /* Action section */
+    .action-section {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .action-wrapper {
+      background: rgba(42, 45, 47, 0.3);
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--input-border);
+    }
+
+    .generate-form {
+      margin: 0;
+    }
+
+    /* Schedule container */
+    .schedule-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Schedule table */
+    .schedule-table-wrapper {
+      background: var(--form-dark);
+      border: 2px solid var(--title-green);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--form-dark);
+    }
+
+    .schedule-header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--secondary-purple));
+    }
+
+    .time-header {
+      background: var(--title-green);
+      width: 150px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+    }
+
+    .time-header-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .time-icon {
+      font-size: 1.5rem;
+    }
+
+    .time-text {
+      font-size: 0.9rem;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+    }
+
+    .day-header {
+      padding: 1.5rem 1rem;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary-dark), var(--accent-blue));
+      border-right: 1px solid var(--input-border);
+      transition: all 0.3s ease;
+    }
+
+    .day-header:last-child {
+      border-right: none;
+    }
+
+    .day-header:hover {
+      background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
+      transform: translateY(-2px);
+    }
+
+    .day-header-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .day-icon {
+      font-size: 1.5rem;
+    }
+
+    .day-name {
+      font-weight: 700;
+      color: white;
+      font-size: 1.1rem;
+    }
+
+    /* Schedule body */
+    .schedule-body {
+      background: var(--form-dark);
+    }
+
+    .schedule-row {
+      border-bottom: 1px solid var(--input-border);
+      transition: all 0.3s ease;
+    }
+
+    .schedule-row:last-child {
+      border-bottom: none;
+    }
+
+    .schedule-row:hover {
+      background: rgba(8, 164, 189, 0.05);
+    }
+
+    .time-cell {
+      background: var(--input-bg);
+      border-right: 2px solid var(--input-border);
+      padding: 1rem;
+      text-align: center;
+      width: 150px;
+    }
+
+    .time-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .time-range {
+      font-weight: 600;
+      color: var(--accent-blue);
+      font-size: 0.95rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .time-period {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .course-cell {
+      border-right: 1px solid var(--input-border);
+      padding: 0;
+      min-height: 80px;
+      position: relative;
+    }
+
+    .course-cell:last-child {
+      border-right: none;
+    }
+
+    .course-content {
+      height: 100%;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .has-course {
+      background: linear-gradient(135deg, rgba(52, 152, 219, 0.15), rgba(52, 152, 219, 0.05));
+      border-left: 4px solid var(--course-color);
+    }
+
+    .has-course:hover {
+      background: linear-gradient(135deg, rgba(52, 152, 219, 0.25), rgba(52, 152, 219, 0.08));
+      transform: translateY(-2px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .course-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .course-icon {
+      font-size: 1.2rem;
+    }
+
+    .course-name {
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .course-time {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .empty-course {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .empty-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      opacity: 0.5;
+    }
+
+    .empty-icon {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+    }
+
+    .empty-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Empty schedule */
+    .empty-schedule {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: rgba(42, 45, 47, 0.3);
+      border: 2px solid var(--input-border);
+      border-radius: 12px;
+    }
+
+    .empty-schedule .empty-icon {
+      font-size: 5rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.7;
+    }
+
+    .empty-schedule .empty-title {
+      color: var(--accent-blue);
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .empty-schedule .empty-message {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      line-height: 1.6;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .schedule-table-wrapper {
+        overflow-x: auto;
+      }
+
+      .schedule-table {
+        min-width: 700px;
+      }
+
+      .time-header,
+      .time-cell {
+        width: 120px;
+      }
+
+      .day-header {
+        padding: 1rem 0.5rem;
+      }
+
+      .day-name {
+        font-size: 1rem;
+      }
+
+      .course-content {
+        padding: 0.75rem 0.5rem;
+        min-height: 70px;
+      }
+
+      .course-name {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
 {% endblock %}
