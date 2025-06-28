@@ -58,565 +58,6 @@
 
     <!-- Table des utilisateurs -->
     <div class="admin-container">
-      {% extends 'base.html.twig' %}
-
-      {% block title %}
-        Administration - EDT Manager
-      {% endblock %}
-
-      {% block body %}
-        <section class="container-fluid px-4 py-3">
-          <!-- En-tête de la page -->
-          <header class="page-header">
-            <div class="header-icon">⚙️</div>
-            <h1 class="header-title">Panneau d'Administration</h1>
-            <p class="header-subtitle">Attribuez ou retirez des rôles aux utilisateurs de votre établissement</p>
-          </header>
-
-          <!-- Statistiques rapides en ligne -->
-          <div class="admin-stats-container">
-            <div class="admin-stats-row" data-controller="stats-counter">
-              <div class="admin-stat-item" data-stats-counter-target="item">
-                <div class="admin-stat-icon">👥</div>
-                <div class="admin-stat-number">{{ users|length }}</div>
-                <div class="admin-stat-label">Utilisateurs totaux</div>
-              </div>
-
-              <div class="admin-stat-separator">•</div>
-
-              <div class="admin-stat-item" data-stats-counter-target="item">
-                <div class="admin-stat-icon">👑</div>
-                <div class="admin-stat-number">
-                  {% set adminCount = 0 %}
-                  {% for user in users %}
-                    {% if 'ROLE_ADMIN' in user.roles %}
-                      {% set adminCount = adminCount + 1 %}
-                    {% endif %}
-                  {% endfor %}
-                  {{ adminCount }}
-                </div>
-                <div class="admin-stat-label">Administrateurs</div>
-              </div>
-
-              <div class="admin-stat-separator">•</div>
-
-              <div class="admin-stat-item" data-stats-counter-target="item">
-                <div class="admin-stat-icon">👨‍🏫</div>
-                <div class="admin-stat-number">
-                  {% set profCount = 0 %}
-                  {% for user in users %}
-                    {% if 'ROLE_PROF' in user.roles %}
-                      {% set profCount = profCount + 1 %}
-                    {% endif %}
-                  {% endfor %}
-                  {{ profCount }}
-                </div>
-                <div class="admin-stat-label">Professeurs</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Table des utilisateurs -->
-          <div class="admin-container">
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>
-                      <div class="th-content">
-                        <span class="th-icon">📧</span>
-                        Email
-                      </div>
-                    </th>
-                    <th>
-                      <div class="th-content">
-                        <span class="th-icon">🎭</span>
-                        Rôles actuels
-                      </div>
-                    </th>
-                    <th>
-                      <div class="th-content">
-                        <span class="th-icon">⚙️</span>
-                        Actions
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for user in users %}
-                    <tr class="table-row" data-table-target="row">
-                      <td>
-                        <div class="cell-content">
-                          <div class="user-info">
-                            <div class="user-avatar">
-                              <span class="avatar-icon">👤</span>
-                            </div>
-                            <div class="user-details">
-                              <div class="cell-main">{{ user.email }}</div>
-                              <div class="cell-meta">Utilisateur système</div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="cell-content">
-                          <div class="roles-list">
-                            {% for role in user.roles %}
-                              <span class="role-badge role-{{ role|lower|replace({ role_: '' }) }}">
-                                {% if role == 'ROLE_ADMIN' %}
-                                  <span class="role-icon">👑</span>
-                                  Administrateur
-                                {% elseif role == 'ROLE_PROF' %}
-                                  <span class="role-icon">👨‍🏫</span>
-                                  Professeur
-                                {% elseif role == 'ROLE_USER' %}
-                                  <span class="role-icon">👤</span>
-                                  Utilisateur
-                                {% else %}
-                                  <span class="role-icon">🎭</span>
-                                  {{ role }}
-                                {% endif %}
-                              </span>
-                            {% endfor %}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="action-buttons">
-                          {% if 'ROLE_ADMIN' not in user.roles %}
-                            <form method="post" action="{{ path('admin_add_role', { id: user.id, role: 'ROLE_ADMIN' }) }}" class="action-form">
-                              <button type="submit" class="action-btn btn-promote" title="Attribuer le rôle Administrateur" data-controller="button-hover">
-                                <span class="btn-icon">👑</span>
-                                <span class="btn-text">Admin</span>
-                              </button>
-                            </form>
-                          {% else %}
-                            <form method="post" action="{{ path('admin_remove_role', { id: user.id, role: 'ROLE_ADMIN' }) }}" class="action-form" data-controller="confirm" data-confirm-message-value="Retirer le rôle Administrateur à {{ user.email }} ?" data-action="submit->confirm#ask">
-                              <button type="submit" class="action-btn btn-demote" title="Retirer le rôle Administrateur" data-controller="button-hover">
-                                <span class="btn-icon">👑</span>
-                                <span class="btn-text">Retirer Admin</span>
-                              </button>
-                            </form>
-                          {% endif %}
-
-                          {% if 'ROLE_PROF' not in user.roles %}
-                            <form method="post" action="{{ path('admin_add_role', { id: user.id, role: 'ROLE_PROF' }) }}" class="action-form">
-                              <button type="submit" class="action-btn btn-promote" title="Attribuer le rôle Professeur" data-controller="button-hover">
-                                <span class="btn-icon">👨‍🏫</span>
-                                <span class="btn-text">Prof</span>
-                              </button>
-                            </form>
-                          {% else %}
-                            <form method="post" action="{{ path('admin_remove_role', { id: user.id, role: 'ROLE_PROF' }) }}" class="action-form" data-controller="confirm" data-confirm-message-value="Retirer le rôle Professeur à {{ user.email }} ?" data-action="submit->confirm#ask">
-                              <button type="submit" class="action-btn btn-demote" title="Retirer le rôle Professeur" data-controller="button-hover">
-                                <span class="btn-icon">👨‍🏫</span>
-                                <span class="btn-text">Retirer Prof</span>
-                              </button>
-                            </form>
-                          {% endif %}
-                        </div>
-                      </td>
-                    </tr>
-                  {% else %}
-                    <tr>
-                      <td colspan="3" class="empty-row">
-                        <div class="empty-content">
-                          <span class="empty-icon">👥</span>
-                          <span class="empty-text">Aucun utilisateur trouvé</span>
-                        </div>
-                      </td>
-                    </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-
-        <style>
-    /* Statistiques admin en ligne */
-    .admin-stats-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 2.5rem;
-    }
-
-    .admin-stats-row {
-      display: flex;
-      align-items: center;
-      gap: 2rem;
-      padding: 1.5rem 2.5rem;
-      background: rgba(42, 45, 47, 0.3);
-      border: 2px solid var(--input-border);
-      border-radius: 50px;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-    }
-
-    .admin-stats-row:hover {
-      background: rgba(42, 45, 47, 0.4);
-      border-color: var(--accent-blue);
-      box-shadow: 0 8px 25px rgba(8, 164, 189, 0.15);
-      transform: translateY(-2px);
-    }
-
-    .admin-stat-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      min-width: 120px;
-      transition: all 0.3s ease;
-    }
-
-    .admin-stat-item:hover {
-      transform: translateY(-3px);
-    }
-
-    .admin-stat-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      opacity: 0.9;
-    }
-
-    .admin-stat-number {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--accent-blue);
-      line-height: 1;
-      margin-bottom: 0.25rem;
-    }
-
-    .admin-stat-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .admin-stat-separator {
-      font-size: 1.5rem;
-      color: var(--input-border);
-      opacity: 0.6;
-    }
-
-    /* User info avec avatar */
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-blue), var(--title-green));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .avatar-icon {
-      font-size: 1.2rem;
-      color: white;
-    }
-
-    .user-details {
-      flex: 1;
-    }
-
-    /* Badges de rôles */
-    .roles-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .role-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border: 2px solid;
-      transition: all 0.3s ease;
-    }
-
-    .role-admin {
-      background: rgba(220, 53, 69, 0.1);
-      border-color: var(--danger-red);
-      color: var(--danger-red);
-    }
-
-    .role-prof {
-      background: rgba(8, 164, 189, 0.1);
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
-    }
-
-    .role-user {
-      background: rgba(149, 165, 166, 0.1);
-      border-color: var(--text-muted);
-      color: var(--text-muted);
-    }
-
-    .role-icon {
-      font-size: 0.9rem;
-    }
-
-    /* Boutons d'action spécifiques */
-    .action-buttons {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .action-form {
-      display: inline;
-      margin: 0;
-    }
-
-    .action-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1rem;
-      border: 2px solid;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      background: none;
-      text-decoration: none;
-      min-width: 100px;
-      justify-content: center;
-    }
-
-    .btn-promote {
-      background: rgba(40, 167, 69, 0.1);
-      border-color: var(--success-green);
-      color: var(--success-green);
-    }
-
-    .btn-promote:hover {
-      background: var(--success-green);
-      color: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
-    }
-
-    .btn-demote {
-      background: rgba(255, 193, 7, 0.1);
-      border-color: var(--warning-orange);
-      color: var(--warning-orange);
-    }
-
-    .btn-demote:hover {
-      background: var(--warning-orange);
-      color: var(--primary-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
-    }
-
-    .btn-promote:active,
-    .btn-demote:active {
-      transform: translateY(0);
-    }
-
-    /* État vide pour la table */
-    .empty-row {
-      text-align: center;
-      padding: 3rem 2rem;
-    }
-
-    .empty-content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      color: var(--text-muted);
-    }
-
-    .empty-icon {
-      font-size: 3rem;
-      opacity: 0.6;
-    }
-
-    .empty-text {
-      font-size: 1.1rem;
-      font-style: italic;
-    }
-
-    /* Container admin */
-    .admin-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    /* Responsive pour les statistiques admin */
-    @media (max-width: 768px) {
-      .admin-stats-row {
-        flex-direction: column;
-        gap: 1.5rem;
-        padding: 1.5rem;
-        border-radius: 12px;
-      }
-
-      .admin-stat-separator {
-        display: none;
-      }
-
-      .admin-stat-item {
-        min-width: auto;
-        width: 100%;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.03);
-        border-radius: 8px;
-        border: 1px solid var(--input-border);
-      }
-
-      .admin-stat-number {
-        font-size: 1.5rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .admin-stats-container {
-        padding: 0 1rem;
-      }
-
-      .admin-stats-row {
-        padding: 1rem;
-        gap: 1rem;
-      }
-
-      .admin-stat-icon {
-        font-size: 1.5rem;
-      }
-
-      .admin-stat-number {
-        font-size: 1.3rem;
-      }
-
-      .admin-stat-label {
-        font-size: 0.8rem;
-      }
-    }
-      .user-info {
-        gap: 0.75rem;
-      }
-
-      .user-avatar {
-        width: 35px;
-        height: 35px;
-      }
-
-      .avatar-icon {
-        font-size: 1rem;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-
-      .action-btn {
-        width: 100%;
-        min-width: auto;
-        padding: 0.75rem 1rem;
-      }
-
-      .roles-list {
-        justify-content: center;
-      }
-
-      .role-badge {
-        font-size: 0.8rem;
-        padding: 0.4rem 0.8rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .btn-text {
-        display: none;
-      }
-
-      .action-btn {
-        min-width: 60px;
-        padding: 0.75rem 0.5rem;
-      }
-
-      .user-info {
-        flex-direction: column;
-        text-align: center;
-        gap: 0.5rem;
-      }
-
-      .data-table {
-        font-size: 0.85rem;
-      }
-    }
-
-    /* Animation pour les changements de rôles */
-    .role-badge {
-      animation: fadeInScale 0.3s ease-out;
-    }
-
-    @keyframes fadeInScale {
-      from {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    /* Hover effects pour les rôles */
-    .role-badge:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Amélioration de l'accessibilité */
-    .action-btn:focus {
-      outline: 2px solid currentColor;
-      outline-offset: 2px;
-    }
-
-    .role-badge:focus {
-      outline: 2px solid currentColor;
-      outline-offset: 2px;
-    }
-
-    /* Indicateur de statut pour les utilisateurs actifs */
-    .user-avatar::after {
-      content: '';
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      width: 12px;
-      height: 12px;
-      background: var(--success-green);
-      border: 2px solid var(--form-dark);
-      border-radius: 50%;
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
-    }
-
-    /* Corrections pour le positionnement relatif */
-    .user-avatar {
-      position: relative;
-    }
-  </style>
-      {% endblock %}
       <div class="table-responsive">
         <table class="data-table">
           <thead>
@@ -661,7 +102,7 @@
                   <div class="cell-content">
                     <div class="roles-list">
                       {% for role in user.roles %}
-                        <span class="role-badge role-{{ role|lower|replace({ role_: '' }) }}">
+                        <span class="role-badge role-{{ role|lower|replace({ 'role_': '' }) }}">
                           {% if role == 'ROLE_ADMIN' %}
                             <span class="role-icon">👑</span>
                             Administrateur
@@ -739,7 +180,7 @@
       justify-content: center;
       margin-bottom: 2.5rem;
     }
-    
+
     .admin-stats-row {
       display: flex;
       align-items: center;
@@ -751,14 +192,14 @@
       backdrop-filter: blur(10px);
       transition: all 0.3s ease;
     }
-    
+
     .admin-stats-row:hover {
       background: rgba(42, 45, 47, 0.4);
       border-color: var(--accent-blue);
       box-shadow: 0 8px 25px rgba(8, 164, 189, 0.15);
       transform: translateY(-2px);
     }
-    
+
     .admin-stat-item {
       display: flex;
       flex-direction: column;
@@ -767,17 +208,17 @@
       min-width: 120px;
       transition: all 0.3s ease;
     }
-    
+
     .admin-stat-item:hover {
       transform: translateY(-3px);
     }
-    
+
     .admin-stat-icon {
       font-size: 2rem;
       margin-bottom: 0.5rem;
       opacity: 0.9;
     }
-    
+
     .admin-stat-number {
       font-size: 1.8rem;
       font-weight: 700;
@@ -785,7 +226,7 @@
       line-height: 1;
       margin-bottom: 0.25rem;
     }
-    
+
     .admin-stat-label {
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -793,20 +234,20 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    
+
     .admin-stat-separator {
       font-size: 1.5rem;
       color: var(--input-border);
       opacity: 0.6;
     }
-    
+
     /* User info avec avatar */
     .user-info {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
-    
+
     .user-avatar {
       width: 40px;
       height: 40px;
@@ -816,24 +257,25 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      position: relative;
     }
-    
+
     .avatar-icon {
       font-size: 1.2rem;
       color: white;
     }
-    
+
     .user-details {
       flex: 1;
     }
-    
+
     /* Badges de rôles */
     .roles-list {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
     }
-    
+
     .role-badge {
       display: inline-flex;
       align-items: center;
@@ -844,30 +286,31 @@
       font-weight: 600;
       border: 2px solid;
       transition: all 0.3s ease;
+      animation: fadeInScale 0.3s ease-out;
     }
-    
+
     .role-admin {
       background: rgba(220, 53, 69, 0.1);
       border-color: var(--danger-red);
       color: var(--danger-red);
     }
-    
+
     .role-prof {
       background: rgba(8, 164, 189, 0.1);
       border-color: var(--accent-blue);
       color: var(--accent-blue);
     }
-    
+
     .role-user {
       background: rgba(149, 165, 166, 0.1);
       border-color: var(--text-muted);
       color: var(--text-muted);
     }
-    
+
     .role-icon {
       font-size: 0.9rem;
     }
-    
+
     /* Boutons d'action spécifiques */
     .action-buttons {
       display: flex;
@@ -875,12 +318,12 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-    
+
     .action-form {
       display: inline;
       margin: 0;
     }
-    
+
     .action-btn {
       display: flex;
       align-items: center;
@@ -897,44 +340,44 @@
       min-width: 100px;
       justify-content: center;
     }
-    
+
     .btn-promote {
       background: rgba(40, 167, 69, 0.1);
       border-color: var(--success-green);
       color: var(--success-green);
     }
-    
+
     .btn-promote:hover {
       background: var(--success-green);
       color: white;
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
     }
-    
+
     .btn-demote {
       background: rgba(255, 193, 7, 0.1);
       border-color: var(--warning-orange);
       color: var(--warning-orange);
     }
-    
+
     .btn-demote:hover {
       background: var(--warning-orange);
       color: var(--primary-dark);
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
     }
-    
+
     .btn-promote:active,
     .btn-demote:active {
       transform: translateY(0);
     }
-    
+
     /* État vide pour la table */
     .empty-row {
       text-align: center;
       padding: 3rem 2rem;
     }
-    
+
     .empty-content {
       display: flex;
       flex-direction: column;
@@ -942,23 +385,23 @@
       gap: 1rem;
       color: var(--text-muted);
     }
-    
+
     .empty-icon {
       font-size: 3rem;
       opacity: 0.6;
     }
-    
+
     .empty-text {
       font-size: 1.1rem;
       font-style: italic;
     }
-    
+
     /* Container admin */
     .admin-container {
       max-width: 1200px;
       margin: 0 auto;
     }
-    
+
     /* Responsive pour les statistiques admin */
     @media (max-width: 768px) {
       .admin-stats-row {
@@ -967,11 +410,11 @@
         padding: 1.5rem;
         border-radius: 12px;
       }
-    
+
       .admin-stat-separator {
         display: none;
       }
-    
+
       .admin-stat-item {
         min-width: auto;
         width: 100%;
@@ -980,93 +423,88 @@
         border-radius: 8px;
         border: 1px solid var(--input-border);
       }
-    
+
       .admin-stat-number {
         font-size: 1.5rem;
       }
+
+      .user-info {
+        gap: 0.75rem;
+      }
+
+      .user-avatar {
+        width: 35px;
+        height: 35px;
+      }
+
+      .avatar-icon {
+        font-size: 1rem;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .action-btn {
+        width: 100%;
+        min-width: auto;
+        padding: 0.75rem 1rem;
+      }
+
+      .roles-list {
+        justify-content: center;
+      }
+
+      .role-badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+      }
     }
-    
+
     @media (max-width: 480px) {
       .admin-stats-container {
         padding: 0 1rem;
       }
-    
+
       .admin-stats-row {
         padding: 1rem;
         gap: 1rem;
       }
-    
+
       .admin-stat-icon {
         font-size: 1.5rem;
       }
-    
+
       .admin-stat-number {
         font-size: 1.3rem;
       }
-    
+
       .admin-stat-label {
         font-size: 0.8rem;
       }
-    }
-    .user-info {
-      gap: 0.75rem;
-    }
-    
-    .user-avatar {
-      width: 35px;
-      height: 35px;
-    }
-    
-    .avatar-icon {
-      font-size: 1rem;
-    }
-    
-    .action-buttons {
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-    
-    .action-btn {
-      width: 100%;
-      min-width: auto;
-      padding: 0.75rem 1rem;
-    }
-    
-    .roles-list {
-      justify-content: center;
-    }
-    
-    .role-badge {
-      font-size: 0.8rem;
-      padding: 0.4rem 0.8rem;
-    }
-    
-    @media (max-width: 480px) {
+
       .btn-text {
         display: none;
       }
-    
+
       .action-btn {
         min-width: 60px;
         padding: 0.75rem 0.5rem;
       }
-    
+
       .user-info {
         flex-direction: column;
         text-align: center;
         gap: 0.5rem;
       }
-    
+
       .data-table {
         font-size: 0.85rem;
       }
     }
-    
+
     /* Animation pour les changements de rôles */
-    .role-badge {
-      animation: fadeInScale 0.3s ease-out;
-    }
-    
     @keyframes fadeInScale {
       from {
         opacity: 0;
@@ -1077,24 +515,24 @@
         transform: scale(1);
       }
     }
-    
+
     /* Hover effects pour les rôles */
     .role-badge:hover {
       transform: translateY(-1px);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
-    
+
     /* Amélioration de l'accessibilité */
     .action-btn:focus {
       outline: 2px solid currentColor;
       outline-offset: 2px;
     }
-    
+
     .role-badge:focus {
       outline: 2px solid currentColor;
       outline-offset: 2px;
     }
-    
+
     /* Indicateur de statut pour les utilisateurs actifs */
     .user-avatar::after {
       content: '';
@@ -1107,11 +545,6 @@
       border: 2px solid var(--form-dark);
       border-radius: 50%;
       box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
-    }
-    
-    /* Corrections pour le positionnement relatif */
-    .user-avatar {
-      position: relative;
     }
   </style>
 {% endblock %}
